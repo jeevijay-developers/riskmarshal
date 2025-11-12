@@ -1,59 +1,102 @@
-'use client';
+"use client";
 
-import { Shield, Plus, Search, TrendingUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import { Shield, Plus, Search, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function InsurancePage() {
+  const [isNewPolicyOpen, setIsNewPolicyOpen] = useState(false);
+  const [newPolicy, setNewPolicy] = useState({
+    type: "",
+    client: "",
+    partner: "",
+    premium: "",
+    expiry: "",
+  });
   const policies = [
     {
-      id: 'POL-2024-001',
-      type: 'Health Insurance',
-      client: 'Acme Corporation',
-      premium: '$12,500',
-      status: 'Active',
-      expiry: '2025-03-15',
-      partner: 'SafeGuard Insurance',
+      id: "POL-2024-001",
+      type: "Health Insurance",
+      client: "Acme Corporation",
+      premium: "$12,500",
+      status: "Active",
+      expiry: "2025-03-15",
+      partner: "SafeGuard Insurance",
     },
     {
-      id: 'POL-2024-002',
-      type: 'Property Insurance',
-      client: 'Tech Solutions Ltd',
-      premium: '$8,900',
-      status: 'Active',
-      expiry: '2025-06-20',
-      partner: 'Shield Protect Co.',
+      id: "POL-2024-002",
+      type: "Property Insurance",
+      client: "Tech Solutions Ltd",
+      premium: "$8,900",
+      status: "Active",
+      expiry: "2025-06-20",
+      partner: "Shield Protect Co.",
     },
     {
-      id: 'POL-2024-003',
-      type: 'Life Insurance',
-      client: 'Global Industries',
-      premium: '$21,000',
-      status: 'Active',
-      expiry: '2025-12-31',
-      partner: 'Guardian Life',
+      id: "POL-2024-003",
+      type: "Life Insurance",
+      client: "Global Industries",
+      premium: "$21,000",
+      status: "Active",
+      expiry: "2025-12-31",
+      partner: "Guardian Life",
     },
     {
-      id: 'POL-2024-004',
-      type: 'Vehicle Insurance',
-      client: 'StartupXYZ',
-      premium: '$3,450',
-      status: 'Pending',
-      expiry: '2024-11-30',
-      partner: 'TrustCover Inc.',
+      id: "POL-2024-004",
+      type: "Vehicle Insurance",
+      client: "StartupXYZ",
+      premium: "$3,450",
+      status: "Pending",
+      expiry: "2024-11-30",
+      partner: "TrustCover Inc.",
     },
   ];
+
+  const handleAddPolicy = () => {
+    console.log("Adding policy:", newPolicy);
+    // Here you would typically send the data to your backend
+    setIsNewPolicyOpen(false);
+    setNewPolicy({
+      type: "",
+      client: "",
+      partner: "",
+      premium: "",
+      expiry: "",
+    });
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">Insurance Policies</h2>
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Insurance Policies
+          </h2>
           <p className="text-sm text-gray-600 mt-1">
             Manage all insurance policies and partners
           </p>
         </div>
-        <Button className="bg-[#658C58] hover:bg-[#567a4a] text-white">
+        <Button
+          className="bg-[#658C58] hover:bg-[#567a4a] text-white"
+          onClick={() => setIsNewPolicyOpen(true)}
+        >
           <Plus className="w-4 h-4 mr-2" />
           New Policy
         </Button>
@@ -65,7 +108,9 @@ export default function InsurancePage() {
             <div className="w-10 h-10 rounded-lg bg-[#658C58]/10 flex items-center justify-center">
               <Shield className="w-5 h-5 text-[#658C58]" />
             </div>
-            <h3 className="text-sm font-medium text-gray-600">Total Policies</h3>
+            <h3 className="text-sm font-medium text-gray-600">
+              Total Policies
+            </h3>
           </div>
           <p className="text-3xl font-semibold text-gray-900">3,892</p>
           <p className="text-sm text-green-600 mt-2 flex items-center">
@@ -79,7 +124,9 @@ export default function InsurancePage() {
             <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
               <Shield className="w-5 h-5 text-blue-600" />
             </div>
-            <h3 className="text-sm font-medium text-gray-600">Active Policies</h3>
+            <h3 className="text-sm font-medium text-gray-600">
+              Active Policies
+            </h3>
           </div>
           <p className="text-3xl font-semibold text-gray-900">3,845</p>
           <p className="text-sm text-gray-600 mt-2">98.8% active rate</p>
@@ -139,7 +186,10 @@ export default function InsurancePage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {policies.map((policy) => (
-                <tr key={policy.id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={policy.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <p className="text-sm font-medium text-[#658C58]">
                       {policy.id}
@@ -165,9 +215,9 @@ export default function InsurancePage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        policy.status === 'Active'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
+                        policy.status === "Active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
                       {policy.status}
@@ -193,6 +243,95 @@ export default function InsurancePage() {
           </div>
         </div>
       </div>
+
+      {/* New Policy Modal */}
+      <Dialog open={isNewPolicyOpen} onOpenChange={setIsNewPolicyOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create New Policy</DialogTitle>
+            <DialogDescription>
+              Fill in the details to create a new insurance policy.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="policy-type">Policy Type</Label>
+              <Select
+                value={newPolicy.type}
+                onValueChange={(value) =>
+                  setNewPolicy({ ...newPolicy, type: value })
+                }
+              >
+                <SelectTrigger id="policy-type">
+                  <SelectValue placeholder="Select policy type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="health">Health Insurance</SelectItem>
+                  <SelectItem value="property">Property Insurance</SelectItem>
+                  <SelectItem value="life">Life Insurance</SelectItem>
+                  <SelectItem value="vehicle">Vehicle Insurance</SelectItem>
+                  <SelectItem value="business">Business Insurance</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="client">Client Name</Label>
+              <Input
+                id="client"
+                placeholder="Enter client name"
+                value={newPolicy.client}
+                onChange={(e) =>
+                  setNewPolicy({ ...newPolicy, client: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="partner">Insurance Partner</Label>
+              <Input
+                id="partner"
+                placeholder="Enter partner name"
+                value={newPolicy.partner}
+                onChange={(e) =>
+                  setNewPolicy({ ...newPolicy, partner: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="premium">Premium Amount</Label>
+              <Input
+                id="premium"
+                placeholder="$0"
+                value={newPolicy.premium}
+                onChange={(e) =>
+                  setNewPolicy({ ...newPolicy, premium: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="expiry">Expiry Date</Label>
+              <Input
+                id="expiry"
+                type="date"
+                value={newPolicy.expiry}
+                onChange={(e) =>
+                  setNewPolicy({ ...newPolicy, expiry: e.target.value })
+                }
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsNewPolicyOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-[#658C58] hover:bg-[#567a4a] text-white"
+              onClick={handleAddPolicy}
+            >
+              Create Policy
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

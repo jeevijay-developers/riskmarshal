@@ -1,19 +1,26 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Shield } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Shield, Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/dashboard');
+
+    if (email === "admin@gmail.com" && password === "admin1234") {
+      router.push("/dashboard");
+      return;
+    }
+    toast.error("Invalid email or password");
   };
 
   return (
@@ -26,13 +33,18 @@ export default function LoginPage() {
           <h1 className="text-3xl font-semibold text-gray-900 mb-2">
             Welcome to RiskMarshal
           </h1>
-          <p className="text-gray-600">Sign in to manage your insurance partners</p>
+          <p className="text-gray-600">
+            Sign in to manage your insurance partners
+          </p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8">
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email
               </label>
               <Input
@@ -47,18 +59,35 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <Button
@@ -68,14 +97,14 @@ export default function LoginPage() {
               Sign In
             </Button>
 
-            <div className="text-center">
+            {/* <div className="text-center">
               <button
                 type="button"
                 className="text-sm text-gray-600 hover:text-[#658C58] transition-colors"
               >
                 Forgot password?
               </button>
-            </div>
+            </div> */}
           </form>
         </div>
       </div>
