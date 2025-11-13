@@ -84,7 +84,7 @@ export default function ReportsPage() {
           </p>
         </div>
         <Button
-          className="bg-[#658C58] hover:bg-[#567a4a] text-white"
+          className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
           onClick={() => setIsGenerateReportOpen(true)}
         >
           <FileText className="w-4 h-4 mr-2" />
@@ -124,8 +124,8 @@ export default function ReportsPage() {
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start space-x-3">
-                <div className="w-12 h-12 rounded-lg bg-[#658C58]/10 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-6 h-6 text-[#658C58]" />
+                <div className="w-12 h-12 rounded-lg bg-[#ab792e]/10 flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-6 h-6 text-[#ab792e]" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">
@@ -151,7 +151,7 @@ export default function ReportsPage() {
 
             <Button
               variant="outline"
-              className="w-full hover:bg-[#658C58] hover:text-white hover:border-[#658C58]"
+              className="w-full hover:bg-[#ab792e] hover:text-white hover:border-[#ab792e]"
             >
               <Download className="w-4 h-4 mr-2" />
               Download Report
@@ -273,7 +273,7 @@ export default function ReportsPage() {
               Cancel
             </Button>
             <Button
-              className="bg-[#658C58] hover:bg-[#567a4a] text-white"
+              className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
               onClick={handleGenerateReport}
             >
               Generate Report

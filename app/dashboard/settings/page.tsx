@@ -1,11 +1,42 @@
-'use client';
+"use client";
 
-import { Settings as SettingsIcon, User, Bell, Lock, Briefcase } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
+import { useState } from "react";
+import {
+  Settings as SettingsIcon,
+  User,
+  Bell,
+  Lock,
+  Briefcase,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { useUser } from "@/contexts/UserContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SettingsPage() {
+  const { userProfile, updateUserProfile } = useUser();
+  const { toast } = useToast();
+
+  const [firstName, setFirstName] = useState(userProfile.firstName);
+  const [lastName, setLastName] = useState(userProfile.lastName);
+  const [email, setEmail] = useState(userProfile.email);
+  const [phone, setPhone] = useState(userProfile.phone);
+
+  const handleSaveChanges = () => {
+    updateUserProfile({
+      firstName,
+      lastName,
+      email,
+      phone,
+    });
+
+    toast({
+      title: "Success",
+      description: "Profile information updated successfully.",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -20,8 +51,8 @@ export default function SettingsPage() {
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-lg bg-[#658C58]/10 flex items-center justify-center">
-                  <User className="w-5 h-5 text-[#658C58]" />
+                <div className="w-10 h-10 rounded-lg bg-[#ab792e]/10 flex items-center justify-center">
+                  <User className="w-5 h-5 text-[#ab792e]" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">
                   Profile Information
@@ -34,29 +65,46 @@ export default function SettingsPage() {
                   <label className="block text-sm font-medium text-gray-700">
                     First Name
                   </label>
-                  <Input defaultValue="John" />
+                  <Input
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">
                     Last Name
                   </label>
-                  <Input defaultValue="Doe" />
+                  <Input
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Email Address
                 </label>
-                <Input type="email" defaultValue="john.doe@riskmarshal.com" />
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Phone Number
                 </label>
-                <Input type="tel" defaultValue="+1 (555) 123-4567" />
+                <Input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
               </div>
               <div className="pt-4">
-                <Button className="bg-[#658C58] hover:bg-[#567a4a] text-white">
+                <Button
+                  className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
+                  onClick={handleSaveChanges}
+                >
                   Save Changes
                 </Button>
               </div>
@@ -66,8 +114,8 @@ export default function SettingsPage() {
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-lg bg-[#658C58]/10 flex items-center justify-center">
-                  <Lock className="w-5 h-5 text-[#658C58]" />
+                <div className="w-10 h-10 rounded-lg bg-[#ab792e]/10 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-[#ab792e]" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">
                   Security
@@ -94,7 +142,7 @@ export default function SettingsPage() {
                 <Input type="password" placeholder="Confirm new password" />
               </div>
               <div className="pt-4">
-                <Button className="bg-[#658C58] hover:bg-[#567a4a] text-white">
+                <Button className="bg-[#ab792e] hover:bg-[#8d6325] text-white">
                   Update Password
                 </Button>
               </div>
@@ -106,8 +154,8 @@ export default function SettingsPage() {
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-lg bg-[#658C58]/10 flex items-center justify-center">
-                  <Bell className="w-5 h-5 text-[#658C58]" />
+                <div className="w-10 h-10 rounded-lg bg-[#ab792e]/10 flex items-center justify-center">
+                  <Bell className="w-5 h-5 text-[#ab792e]" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">
                   Notifications
@@ -165,8 +213,8 @@ export default function SettingsPage() {
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-lg bg-[#658C58]/10 flex items-center justify-center">
-                  <Briefcase className="w-5 h-5 text-[#658C58]" />
+                <div className="w-10 h-10 rounded-lg bg-[#ab792e]/10 flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-[#ab792e]" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">
                   Organization
@@ -187,7 +235,7 @@ export default function SettingsPage() {
                 <Input defaultValue="Insurance Services" />
               </div>
               <div className="pt-4">
-                <Button className="w-full bg-[#658C58] hover:bg-[#567a4a] text-white">
+                <Button className="w-full bg-[#ab792e] hover:bg-[#8d6325] text-white">
                   Update Organization
                 </Button>
               </div>

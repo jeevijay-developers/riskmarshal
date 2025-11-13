@@ -1,7 +1,14 @@
-'use client';
+"use client";
 
-import { Users, Shield, FileText, DollarSign, TrendingUp, Clock } from 'lucide-react';
-import StatCard from '@/components/dashboard/StatCard';
+import {
+  Users,
+  Shield,
+  FileText,
+  DollarSign,
+  TrendingUp,
+  Clock,
+} from "lucide-react";
+import StatCard from "@/components/dashboard/StatCard";
 
 export default function DashboardPage() {
   return (
@@ -11,32 +18,34 @@ export default function DashboardPage() {
           title="Total Clients"
           value="1,247"
           icon={Users}
-          trend={{ value: '12% from last month', isPositive: true }}
+          trend={{ value: "12% from last month", isPositive: true }}
         />
         <StatCard
           title="Active Policies"
           value="3,892"
           icon={Shield}
-          trend={{ value: '8% from last month', isPositive: true }}
+          trend={{ value: "8% from last month", isPositive: true }}
         />
         <StatCard
           title="Pending Claims"
           value="47"
           icon={Clock}
-          trend={{ value: '3% from last week', isPositive: false }}
+          trend={{ value: "3% from last week", isPositive: false }}
         />
         <StatCard
           title="Revenue (YTD)"
           value="$2.4M"
           icon={DollarSign}
-          trend={{ value: '23% from last year', isPositive: true }}
+          trend={{ value: "23% from last year", isPositive: true }}
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Recent Activity
+            </h3>
             <button className="text-sm text-[#658C58] hover:text-[#567a4a] font-medium">
               View All
             </button>
@@ -44,31 +53,31 @@ export default function DashboardPage() {
           <div className="space-y-4">
             {[
               {
-                title: 'New policy issued',
-                client: 'Acme Corporation',
-                time: '2 hours ago',
+                title: "New policy issued",
+                client: "Acme Corporation",
+                time: "2 hours ago",
               },
               {
-                title: 'Claim processed',
-                client: 'Tech Solutions Ltd',
-                time: '4 hours ago',
+                title: "Claim processed",
+                client: "Tech Solutions Ltd",
+                time: "4 hours ago",
               },
               {
-                title: 'Policy renewal',
-                client: 'Global Industries',
-                time: '6 hours ago',
+                title: "Policy renewal",
+                client: "Global Industries",
+                time: "6 hours ago",
               },
               {
-                title: 'New client onboarded',
-                client: 'StartupXYZ',
-                time: '1 day ago',
+                title: "New client onboarded",
+                client: "StartupXYZ",
+                time: "1 day ago",
               },
             ].map((activity, index) => (
               <div
                 key={index}
                 className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-0"
               >
-                <div className="w-2 h-2 rounded-full bg-[#658C58] mt-2"></div>
+                <div className="w-2 h-2 rounded-full bg-[#ab792e] mt-2"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">
                     {activity.title}
@@ -86,26 +95,28 @@ export default function DashboardPage() {
             <h3 className="text-lg font-semibold text-gray-900">
               Top Insurance Partners
             </h3>
-            <TrendingUp className="w-5 h-5 text-[#658C58]" />
+            <TrendingUp className="w-5 h-5 text-[#ab792e]" />
           </div>
           <div className="space-y-4">
             {[
-              { name: 'SafeGuard Insurance', policies: 1245, percentage: 32 },
-              { name: 'Shield Protect Co.', policies: 987, percentage: 25 },
-              { name: 'Guardian Life', policies: 756, percentage: 19 },
-              { name: 'TrustCover Inc.', policies: 621, percentage: 16 },
-              { name: 'SecureNet Insurance', policies: 283, percentage: 8 },
+              { name: "SafeGuard Insurance", policies: 1245, percentage: 32 },
+              { name: "Shield Protect Co.", policies: 987, percentage: 25 },
+              { name: "Guardian Life", policies: 756, percentage: 19 },
+              { name: "TrustCover Inc.", policies: 621, percentage: 16 },
+              { name: "SecureNet Insurance", policies: 283, percentage: 8 },
             ].map((partner, index) => (
               <div key={index} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-900">
                     {partner.name}
                   </p>
-                  <p className="text-sm text-gray-600">{partner.policies} policies</p>
+                  <p className="text-sm text-gray-600">
+                    {partner.policies} policies
+                  </p>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-2">
                   <div
-                    className="bg-[#658C58] h-2 rounded-full"
+                    className="bg-[#ab792e] h-2 rounded-full"
                     style={{ width: `${partner.percentage}%` }}
                   ></div>
                 </div>

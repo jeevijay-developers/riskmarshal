@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -11,8 +11,8 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -20,14 +20,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
+import Image from "next/image";
 
 const navItems = [
-  { name: 'Dashboard Overview', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Our Clients', href: '/dashboard/clients', icon: Users },
-  { name: 'Insurance', href: '/dashboard/insurance', icon: Shield },
-  { name: 'Reports', href: '/dashboard/reports', icon: FileText },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { name: "Dashboard Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Our Clients", href: "/dashboard/clients", icon: Users },
+  { name: "Insurance", href: "/dashboard/insurance", icon: Shield },
+  { name: "Reports", href: "/dashboard/reports", icon: FileText },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export default function Sidebar() {
@@ -38,23 +39,25 @@ export default function Sidebar() {
 
   const handleLogout = () => {
     setShowLogoutModal(false);
-    router.push('/login');
+    router.push("/login");
   };
 
   return (
     <>
       <aside
-        className={`fixed left-0 top-0 h-full bg-[#658C58] text-white flex flex-col transition-all duration-300 ${
-          isCollapsed ? 'w-16' : 'w-64'
+        className={`fixed left-0 top-0 h-full bg-[#ab792e] text-white flex flex-col transition-all duration-300 ${
+          isCollapsed ? "w-16" : "w-64"
         }`}
       >
-        <div className="p-6 flex items-center justify-between border-b border-white/10">
+        <div className="p-2 flex items-center justify-between border-b border-white/10">
           {!isCollapsed && (
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                <Shield className="w-5 h-5" />
-              </div>
-              <span className="font-semibold text-lg">RiskMarshal</span>
+            <div className="flex items-center space-x-3 bg-white p-4 rounded-lg">
+              <Image
+                src="/logo_bgwhite.png"
+                alt="RiskMarshal Logo"
+                width={220}
+                height={120}
+              />
             </div>
           )}
           {isCollapsed && (
@@ -66,7 +69,7 @@ export default function Sidebar() {
 
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-20 w-6 h-6 bg-[#658C58] border-2 border-white rounded-full flex items-center justify-center hover:bg-[#567a4a] transition-colors"
+          className="absolute -right-3 top-20 w-6 h-6 bg-[#ab792e] border-2 border-white rounded-full flex items-center justify-center hover:bg-[#8d6325] transition-colors"
         >
           {isCollapsed ? (
             <ChevronRight className="w-3 h-3" />
@@ -86,10 +89,10 @@ export default function Sidebar() {
                 onClick={() => router.push(item.href)}
                 className={`w-full flex items-center space-x-3 px-3 py-3 rounded-lg transition-colors ${
                   isActive
-                    ? 'bg-white/20 text-white'
-                    : 'text-white/80 hover:bg-white/10 hover:text-white'
-                } ${isCollapsed ? 'justify-center' : ''}`}
-                title={isCollapsed ? item.name : ''}
+                    ? "bg-white/20 text-white"
+                    : "text-white/80 hover:bg-white/10 hover:text-white"
+                } ${isCollapsed ? "justify-center" : ""}`}
+                title={isCollapsed ? item.name : ""}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
                 {!isCollapsed && (
@@ -104,12 +107,14 @@ export default function Sidebar() {
           <button
             onClick={() => setShowLogoutModal(true)}
             className={`w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors ${
-              isCollapsed ? 'justify-center' : ''
+              isCollapsed ? "justify-center" : ""
             }`}
-            title={isCollapsed ? 'Logout' : ''}
+            title={isCollapsed ? "Logout" : ""}
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
-            {!isCollapsed && <span className="text-sm font-medium">Logout</span>}
+            {!isCollapsed && (
+              <span className="text-sm font-medium">Logout</span>
+            )}
           </button>
         </div>
       </aside>
@@ -119,8 +124,8 @@ export default function Sidebar() {
           <DialogHeader>
             <DialogTitle>Confirm Logout</DialogTitle>
             <DialogDescription>
-              Are you sure you want to log out? You will need to sign in again to
-              access your account.
+              Are you sure you want to log out? You will need to sign in again
+              to access your account.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex space-x-2 sm:space-x-2">
@@ -133,7 +138,7 @@ export default function Sidebar() {
             </Button>
             <Button
               onClick={handleLogout}
-              className="flex-1 bg-[#658C58] hover:bg-[#567a4a] text-white"
+              className="flex-1 bg-[#ab792e] hover:bg-[#8d6325] text-white"
             >
               Confirm
             </Button>

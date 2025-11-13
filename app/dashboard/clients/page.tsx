@@ -112,7 +112,7 @@ export default function ClientsPage() {
           </p>
         </div>
         <Button
-          className="bg-[#658C58] hover:bg-[#567a4a] text-white"
+          className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
           onClick={() => setIsAddClientOpen(true)}
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -166,7 +166,7 @@ export default function ClientsPage() {
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full bg-[#658C58] text-white flex items-center justify-center font-semibold text-sm">
+                      <div className="w-10 h-10 rounded-full bg-[#ab792e] text-white flex items-center justify-center font-semibold text-sm">
                         {client.name.charAt(0)}
                       </div>
                       <div className="ml-4">
@@ -312,7 +312,7 @@ export default function ClientsPage() {
               Cancel
             </Button>
             <Button
-              className="bg-[#658C58] hover:bg-[#567a4a] text-white"
+              className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
               onClick={handleAddClient}
             >
               Add Client

@@ -27,7 +27,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#658C58] mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#ab792e] mb-4">
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-semibold text-gray-900 mb-2">
@@ -92,7 +92,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full bg-[#658C58] hover:bg-[#567a4a] text-white h-11"
+              className="w-full bg-[#ab792e] hover:bg-[#8d6325] text-white h-11"
             >
               Sign In
             </Button>
