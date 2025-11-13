@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Shield, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,8 +28,13 @@ export default function LoginPage() {
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#ab792e] mb-4">
-            <Shield className="w-8 h-8 text-white" />
+          <div className="flex items-center justify-center space-x-3 bg-white p-4 rounded-lg">
+            <Image
+              src="/logo_bgwhite.png"
+              alt="RiskMarshal Logo"
+              width={220}
+              height={120}
+            />
           </div>
           <h1 className="text-3xl font-semibold text-gray-900 mb-2">
             Welcome to RiskMarshal
