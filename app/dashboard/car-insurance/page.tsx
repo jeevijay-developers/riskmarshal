@@ -207,7 +207,7 @@ export default function CarInsurance() {
           <h1 className="text-3xl font-bold text-gray-900">Car Insurance</h1>
           <p className="text-gray-600 mt-1">Manage automotive insurance policies and claims</p>
         </div>
-        <Button className="bg-[#658C58] hover:bg-[#567a4a]" onClick={() => setIsAddModalOpen(true)}>
+        <Button className="bg-[#ab792e] hover:bg-[#8d6325]" onClick={() => setIsAddModalOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           New Car Policy
         </Button>
@@ -340,7 +340,7 @@ export default function CarInsurance() {
                     Edit Policy
                   </Button>
                   {policy.status === 'Pending Renewal' && (
-                    <Button size="sm" className="bg-[#658C58] hover:bg-[#567a4a]">
+                    <Button size="sm" className="bg-[#ab792e] hover:bg-[#8d6325]">
                       Renew Now
                     </Button>
                   )}
@@ -545,7 +545,7 @@ export default function CarInsurance() {
             }}>
               Cancel
             </Button>
-            <Button onClick={handleSavePolicy} className="bg-[#658C58] hover:bg-[#567a4a]">
+            <Button onClick={handleSavePolicy} className="bg-[#ab792e] hover:bg-[#8d6325]">
               Save Policy
             </Button>
           </DialogFooter>
@@ -677,7 +677,7 @@ export default function CarInsurance() {
             <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>
               Close
             </Button>
-            <Button className="bg-[#658C58] hover:bg-[#567a4a]">
+            <Button className="bg-[#ab792e] hover:bg-[#8d6325]">
               Edit Policy
             </Button>
           </DialogFooter>

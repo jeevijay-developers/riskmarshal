@@ -216,7 +216,7 @@ export default function PolicyManagement() {
           <p className="text-gray-600 mt-1">Manage and oversee all insurance policies</p>
         </div>
         <Button 
-          className="bg-[#658C58] hover:bg-[#567a4a]"
+          className="bg-[#ab792e] hover:bg-[#8d6325]"
           onClick={() => setIsAddModalOpen(true)}
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -532,7 +532,7 @@ export default function PolicyManagement() {
             <Button variant="outline" onClick={() => {setIsAddModalOpen(false); resetForm();}}>
               Cancel
             </Button>
-            <Button onClick={handleSavePolicy} className="bg-[#658C58] hover:bg-[#567a4a]">
+            <Button onClick={handleSavePolicy} className="bg-[#ab792e] hover:bg-[#8d6325]">
               Save Policy
             </Button>
           </DialogFooter>

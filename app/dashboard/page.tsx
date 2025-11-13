@@ -46,7 +46,7 @@ export default function DashboardPage() {
             <h3 className="text-lg font-semibold text-gray-900">
               Recent Activity
             </h3>
-            <button className="text-sm text-[#658C58] hover:text-[#567a4a] font-medium">
+            <button className="text-sm text-[#ab792e] hover:text-[#8d6325] font-medium">
               View All
             </button>
           </div>
