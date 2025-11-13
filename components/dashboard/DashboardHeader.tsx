@@ -25,9 +25,9 @@ export default function DashboardHeader() {
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* <button className="relative p-2 text-gray-600 hover:text-[#658C58] transition-colors rounded-lg hover:bg-gray-100">
+          {/* <button className="relative p-2 text-gray-600 hover:text-[#ab792e] transition-colors rounded-lg hover:bg-gray-100">
             <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#658C58] rounded-full"></span>
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#ab792e] rounded-full"></span>
           </button> */}
 
           <div className="flex items-center space-x-3">

@@ -180,7 +180,7 @@ export default function SubAgentManagement() {
           <p className="text-gray-600 mt-1">Manage and oversee all sub agents and their performance</p>
         </div>
         <Button 
-          className="bg-[#658C58] hover:bg-[#567a4a]"
+          className="bg-[#ab792e] hover:bg-[#8d6325]"
           onClick={() => setIsAddModalOpen(true)}
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -439,7 +439,7 @@ export default function SubAgentManagement() {
             <Button variant="outline" onClick={() => {setIsAddModalOpen(false); resetForm();}}>
               Cancel
             </Button>
-            <Button onClick={handleSaveAgent} className="bg-[#658C58] hover:bg-[#567a4a]">
+            <Button onClick={handleSaveAgent} className="bg-[#ab792e] hover:bg-[#8d6325]">
               Save Agent
             </Button>
           </DialogFooter>

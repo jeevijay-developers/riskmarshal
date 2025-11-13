@@ -106,7 +106,7 @@ export default function LoginPage() {
             {/* <div className="text-center">
               <button
                 type="button"
-                className="text-sm text-gray-600 hover:text-[#658C58] transition-colors"
+                className="text-sm text-gray-600 hover:text-[#ab792e] transition-colors"
               >
                 Forgot password?
               </button>

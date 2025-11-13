@@ -17,7 +17,7 @@ export default function Revenue() {
             <Download className="w-4 h-4 mr-2" />
             Export Report
           </Button>
-          <Button className="bg-[#658C58] hover:bg-[#567a4a]">
+          <Button className="bg-[#ab792e] hover:bg-[#8d6325]">
             <BarChart3 className="w-4 h-4 mr-2" />
             Generate Report
           </Button>
@@ -127,7 +127,7 @@ export default function Revenue() {
               ].map((data, index) => (
                 <div key={data.month} className="flex flex-col items-center space-y-1">
                   <div 
-                    className="w-8 bg-[#658C58] rounded-t"
+                    className="w-8 bg-[#ab792e] rounded-t"
                     style={{ height: `${(data.amount / 320) * 200}px` }}
                     title={`$${data.amount}K`}
                   ></div>
@@ -229,7 +229,7 @@ export default function Revenue() {
               ].map((agent, index) => (
                 <div key={agent.agent} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-[#658C58] text-white rounded-full flex items-center justify-center text-sm font-bold">
+                    <div className="w-8 h-8 bg-[#ab792e] text-white rounded-full flex items-center justify-center text-sm font-bold">
                       {index + 1}
                     </div>
                     <div>
