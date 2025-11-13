@@ -2,6 +2,7 @@
 
 import { Users, Shield, FileText, DollarSign, TrendingUp, Clock } from 'lucide-react';
 import StatCard from '@/components/dashboard/StatCard';
+import { formatCurrency, indianClientNames, indianInsuranceCompanies } from '@/lib/utils';
 
 export default function DashboardPage() {
   return (
@@ -27,7 +28,7 @@ export default function DashboardPage() {
         />
         <StatCard
           title="Revenue (YTD)"
-          value="$2.4M"
+          value="₹24Cr"
           icon={DollarSign}
           trend={{ value: '23% from last year', isPositive: true }}
         />
@@ -45,22 +46,22 @@ export default function DashboardPage() {
             {[
               {
                 title: 'New policy issued',
-                client: 'Acme Corporation',
+                client: 'Tata Consultancy Services',
                 time: '2 hours ago',
               },
               {
                 title: 'Claim processed',
-                client: 'Tech Solutions Ltd',
+                client: 'Infosys Technologies',
                 time: '4 hours ago',
               },
               {
                 title: 'Policy renewal',
-                client: 'Global Industries',
+                client: 'Reliance Industries Ltd',
                 time: '6 hours ago',
               },
               {
                 title: 'New client onboarded',
-                client: 'StartupXYZ',
+                client: 'Wipro Corporation',
                 time: '1 day ago',
               },
             ].map((activity, index) => (
@@ -90,11 +91,11 @@ export default function DashboardPage() {
           </div>
           <div className="space-y-4">
             {[
-              { name: 'SafeGuard Insurance', policies: 1245, percentage: 32 },
-              { name: 'Shield Protect Co.', policies: 987, percentage: 25 },
-              { name: 'Guardian Life', policies: 756, percentage: 19 },
-              { name: 'TrustCover Inc.', policies: 621, percentage: 16 },
-              { name: 'SecureNet Insurance', policies: 283, percentage: 8 },
+              { name: 'LIC of India', policies: 1245, percentage: 32 },
+              { name: 'ICICI Prudential Life', policies: 987, percentage: 25 },
+              { name: 'HDFC Life Insurance', policies: 756, percentage: 19 },
+              { name: 'SBI Life Insurance', policies: 621, percentage: 16 },
+              { name: 'Bajaj Allianz General', policies: 283, percentage: 8 },
             ].map((partner, index) => (
               <div key={index} className="space-y-2">
                 <div className="flex items-center justify-between">

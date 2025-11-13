@@ -34,38 +34,38 @@ export default function InsurancePage() {
     {
       id: "POL-2024-001",
       type: "Health Insurance",
-      client: "Acme Corporation",
-      premium: "$12,500",
+      client: "Tata Consultancy Services",
+      premium: "₹1.25L",
       status: "Active",
       expiry: "2025-03-15",
-      partner: "SafeGuard Insurance",
+      partner: "LIC of India",
     },
     {
       id: "POL-2024-002",
       type: "Property Insurance",
-      client: "Tech Solutions Ltd",
-      premium: "$8,900",
+      client: "Infosys Technologies",
+      premium: "₹89K",
       status: "Active",
       expiry: "2025-06-20",
-      partner: "Shield Protect Co.",
+      partner: "ICICI Prudential Life",
     },
     {
       id: "POL-2024-003",
       type: "Life Insurance",
-      client: "Global Industries",
-      premium: "$21,000",
+      client: "Reliance Industries Ltd",
+      premium: "₹2.1L",
       status: "Active",
       expiry: "2025-12-31",
-      partner: "Guardian Life",
+      partner: "HDFC Life Insurance",
     },
     {
       id: "POL-2024-004",
       type: "Vehicle Insurance",
-      client: "StartupXYZ",
-      premium: "$3,450",
+      client: "Wipro Corporation",
+      premium: "₹34.5K",
       status: "Pending",
       expiry: "2024-11-30",
-      partner: "TrustCover Inc.",
+      partner: "Bajaj Allianz General",
     },
   ];
 
@@ -300,7 +300,7 @@ export default function InsurancePage() {
               <Label htmlFor="premium">Premium Amount</Label>
               <Input
                 id="premium"
-                placeholder="$0"
+                placeholder="₹0"
                 value={newPolicy.premium}
                 onChange={(e) =>
                   setNewPolicy({ ...newPolicy, premium: e.target.value })

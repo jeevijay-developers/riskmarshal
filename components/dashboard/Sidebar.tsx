@@ -11,6 +11,16 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  FileCheck,
+  UserCog,
+  Car,
+  UserCheck,
+  RefreshCw,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Heart,
+  Building,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +37,16 @@ const navItems = [
   { name: 'Our Clients', href: '/dashboard/clients', icon: Users },
   { name: 'Insurance', href: '/dashboard/insurance', icon: Shield },
   { name: 'Reports', href: '/dashboard/reports', icon: FileText },
+  { name: 'Policy management', href: '/dashboard/policy', icon: FileCheck },
+  { name: 'Sub agent management', href: '/dashboard/subagent', icon: UserCog },
+  { name: 'Car insurance', href: '/dashboard/car-insurance', icon: Car },
+  { name: 'Term insurance', href: '/dashboard/term-insurance', icon: Heart },
+  { name: 'Industry insurance', href: '/dashboard/industry-insurance', icon: Building },
+  { name: 'Our employees', href: '/dashboard/employees', icon: UserCheck },
+  { name: 'Renewal list', href: '/dashboard/renewals', icon: RefreshCw },
+  { name: 'Active Policies', href: '/dashboard/active-policies', icon: CheckCircle },
+  { name: 'Pending Claims', href: '/dashboard/pending-claims', icon: Clock },
+  { name: 'Revenue', href: '/dashboard/revenue', icon: DollarSign },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
