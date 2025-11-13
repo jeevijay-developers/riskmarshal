@@ -94,7 +94,7 @@ export default function InsurancePage() {
           </p>
         </div>
         <Button
-          className="bg-[#658C58] hover:bg-[#567a4a] text-white"
+          className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
           onClick={() => setIsNewPolicyOpen(true)}
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -105,8 +105,8 @@ export default function InsurancePage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <div className="flex items-center space-x-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-[#658C58]/10 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-[#658C58]" />
+            <div className="w-10 h-10 rounded-lg bg-[#ab792e]/10 flex items-center justify-center">
+              <Shield className="w-5 h-5 text-[#ab792e]" />
             </div>
             <h3 className="text-sm font-medium text-gray-600">
               Total Policies
@@ -191,7 +191,7 @@ export default function InsurancePage() {
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="text-sm font-medium text-[#658C58]">
+                    <p className="text-sm font-medium text-[#ab792e]">
                       {policy.id}
                     </p>
                   </td>
@@ -324,7 +324,7 @@ export default function InsurancePage() {
               Cancel
             </Button>
             <Button
-              className="bg-[#658C58] hover:bg-[#567a4a] text-white"
+              className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
               onClick={handleAddPolicy}
             >
               Create Policy
