@@ -21,8 +21,8 @@ import {
   DollarSign,
   Heart,
   Building,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -34,21 +34,29 @@ import {
 import Image from "next/image";
 
 const navItems = [
-  { name: 'Dashboard Overview', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Our Clients', href: '/dashboard/clients', icon: Users },
-  { name: 'Insurance', href: '/dashboard/insurance', icon: Shield },
-  { name: 'Reports', href: '/dashboard/reports', icon: FileText },
-  { name: 'Policy management', href: '/dashboard/policy', icon: FileCheck },
-  { name: 'Sub agent management', href: '/dashboard/subagent', icon: UserCog },
-  { name: 'Car insurance', href: '/dashboard/car-insurance', icon: Car },
-  { name: 'Term insurance', href: '/dashboard/term-insurance', icon: Heart },
-  { name: 'Industry insurance', href: '/dashboard/industry-insurance', icon: Building },
-  { name: 'Our employees', href: '/dashboard/employees', icon: UserCheck },
-  { name: 'Renewal list', href: '/dashboard/renewals', icon: RefreshCw },
-  { name: 'Active Policies', href: '/dashboard/active-policies', icon: CheckCircle },
-  { name: 'Pending Claims', href: '/dashboard/pending-claims', icon: Clock },
-  { name: 'Revenue', href: '/dashboard/revenue', icon: DollarSign },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { name: "Dashboard Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Our Clients", href: "/dashboard/clients", icon: Users },
+  { name: "Insurance", href: "/dashboard/insurance", icon: Shield },
+  { name: "Reports", href: "/dashboard/reports", icon: FileText },
+  { name: "Policy management", href: "/dashboard/policy", icon: FileCheck },
+  { name: "Sub agent management", href: "/dashboard/subagent", icon: UserCog },
+  { name: "Car insurance", href: "/dashboard/car-insurance", icon: Car },
+  { name: "Term insurance", href: "/dashboard/term-insurance", icon: Heart },
+  {
+    name: "Industry insurance",
+    href: "/dashboard/industry-insurance",
+    icon: Building,
+  },
+  { name: "Our employees", href: "/dashboard/employees", icon: UserCheck },
+  { name: "Renewal list", href: "/dashboard/renewals", icon: RefreshCw },
+  {
+    name: "Active Policies",
+    href: "/dashboard/active-policies",
+    icon: CheckCircle,
+  },
+  { name: "Pending Claims", href: "/dashboard/pending-claims", icon: Clock },
+  { name: "Revenue", href: "/dashboard/revenue", icon: DollarSign },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export default function Sidebar() {
@@ -65,31 +73,32 @@ export default function Sidebar() {
   return (
     <>
       <aside
-        className={`fixed left-0 top-0 h-full bg-[#ab792e] text-white flex flex-col transition-all duration-300 ${
+        className={`fixed left-0 top-0 h-full bg-[#ab792e] text-white flex flex-col transition-all duration-300 overflow-hidden ${
           isCollapsed ? "w-16" : "w-64"
         }`}
       >
-        <div className="p-2 flex items-center justify-between border-b border-white/10">
+        <div className="p-4 flex items-center justify-center border-b border-white/20 bg-[#8d6325]/30">
           {!isCollapsed && (
-            <div className="flex items-center space-x-3 bg-white p-4 rounded-lg">
+            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-lg w-full">
               <Image
                 src="/logo_bgwhite.png"
                 alt="RiskMarshal Logo"
                 width={220}
                 height={120}
+                className="object-contain"
               />
             </div>
           )}
           {isCollapsed && (
-            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center mx-auto">
-              <Shield className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-white shadow-md flex items-center justify-center">
+              <Shield className="w-6 h-6 text-[#ab792e]" />
             </div>
           )}
         </div>
 
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-20 w-6 h-6 bg-[#ab792e] border-2 border-white rounded-full flex items-center justify-center hover:bg-[#8d6325] transition-colors"
+          className="absolute -right-3 top-24 w-7 h-7 bg-white text-[#ab792e] border-2 border-[#ab792e] rounded-full flex items-center justify-center hover:bg-[#fad398] hover:text-white transition-all duration-300 shadow-lg z-10"
         >
           {isCollapsed ? (
             <ChevronRight className="w-3 h-3" />
@@ -98,7 +107,7 @@ export default function Sidebar() {
           )}
         </button>
 
-        <nav className="flex-1 py-6 px-3 space-y-1">
+        <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto custom-scrollbar">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -107,31 +116,37 @@ export default function Sidebar() {
               <button
                 key={item.name}
                 onClick={() => router.push(item.href)}
-                className={`w-full flex items-center space-x-3 px-3 py-3 rounded-lg transition-colors ${
+                className={`w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all duration-200 group ${
                   isActive
-                    ? "bg-white/20 text-white"
-                    : "text-white/80 hover:bg-white/10 hover:text-white"
+                    ? "bg-white text-[#ab792e] shadow-md font-semibold"
+                    : "text-white/90 hover:bg-white/15 hover:text-white hover:shadow-sm"
                 } ${isCollapsed ? "justify-center" : ""}`}
                 title={isCollapsed ? item.name : ""}
               >
-                <Icon className="w-5 h-5 flex-shrink-0" />
+                <Icon
+                  className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${
+                    isActive ? "" : "group-hover:scale-110"
+                  }`}
+                />
                 {!isCollapsed && (
-                  <span className="text-sm font-medium">{item.name}</span>
+                  <span className="text-sm font-medium truncate">
+                    {item.name}
+                  </span>
                 )}
               </button>
             );
           })}
         </nav>
 
-        <div className="p-3 border-t border-white/10">
+        <div className="p-3 border-t border-white/20 bg-[#8d6325]/20">
           <button
             onClick={() => setShowLogoutModal(true)}
-            className={`w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors ${
+            className={`w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-white/90 hover:bg-red-500/90 hover:text-white transition-all duration-200 group hover:shadow-md ${
               isCollapsed ? "justify-center" : ""
             }`}
             title={isCollapsed ? "Logout" : ""}
           >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
+            <LogOut className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform duration-200" />
             {!isCollapsed && (
               <span className="text-sm font-medium">Logout</span>
             )}
