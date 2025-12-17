@@ -21,6 +21,8 @@ import {
   DollarSign,
   Heart,
   Building,
+  Upload,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,27 +37,16 @@ import Image from "next/image";
 
 const navItems = [
   { name: "Dashboard Overview", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Our Clients", href: "/dashboard/clients", icon: Users },
-  { name: "Insurance", href: "/dashboard/insurance", icon: Shield },
-  { name: "Reports", href: "/dashboard/reports", icon: FileText },
-  { name: "Policy management", href: "/dashboard/policy", icon: FileCheck },
-  { name: "Sub agent management", href: "/dashboard/subagent", icon: UserCog },
-  { name: "Car insurance", href: "/dashboard/car-insurance", icon: Car },
-  { name: "Term insurance", href: "/dashboard/term-insurance", icon: Heart },
-  {
-    name: "Industry insurance",
-    href: "/dashboard/industry-insurance",
-    icon: Building,
-  },
-  { name: "Our employees", href: "/dashboard/employees", icon: UserCheck },
-  { name: "Renewal list", href: "/dashboard/renewals", icon: RefreshCw },
+  { name: "Upload Policy", href: "/dashboard/upload-policy", icon: Upload },
+  { name: "Subagents", href: "/dashboard/subagent", icon: UserCog },
+  { name: "Payment Approvals", href: "/dashboard/approvals", icon: CreditCard },
+  { name: "Clients", href: "/dashboard/clients", icon: Users },
   {
     name: "Active Policies",
     href: "/dashboard/active-policies",
     icon: CheckCircle,
   },
-  { name: "Pending Claims", href: "/dashboard/pending-claims", icon: Clock },
-  { name: "Revenue", href: "/dashboard/revenue", icon: DollarSign },
+  { name: "Reports", href: "/dashboard/reports", icon: FileText },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 

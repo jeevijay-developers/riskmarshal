@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Search,
   Filter,
@@ -30,23 +30,41 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 
+interface Client {
+  id: number;
+  name: string;
+  contactNumber: string;
+  email: string;
+  address?: string;
+  gstIn?: string;
+  customerId: string;
+  policies: number;
+  status: "Active" | "Pending";
+  value: string;
+}
+
 export default function ClientsPage() {
   const [isAddClientOpen, setIsAddClientOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [newClient, setNewClient] = useState({
     name: "",
-    contact: "",
-    policies: "",
-    value: "",
+    contactNumber: "",
+    email: "",
+    address: "",
+    gstIn: "",
   });
 
   const itemsPerPage = 5;
 
-  const clients = [
+  const [clients, setClients] = useState<Client[]>([
     {
       id: 1,
       name: "Tata Consultancy Services",
-      contact: "rajesh.kumar@tcs.com",
+      contactNumber: "+91-98765-43210",
+      email: "rajesh.kumar@tcs.com",
+      address: "Mumbai, Maharashtra",
+      gstIn: "27AAACT2702R1ZN",
+      customerId: "CUST000001",
       policies: 12,
       status: "Active",
       value: "₹1.25Cr",
@@ -54,7 +72,11 @@ export default function ClientsPage() {
     {
       id: 2,
       name: "Infosys Technologies",
-      contact: "priya.sharma@infosys.in",
+      contactNumber: "+91-87654-32109",
+      email: "priya.sharma@infosys.in",
+      address: "Bengaluru, Karnataka",
+      gstIn: "29AAACI4798L1ZU",
+      customerId: "CUST000002",
       policies: 8,
       status: "Active",
       value: "₹89L",
@@ -62,7 +84,11 @@ export default function ClientsPage() {
     {
       id: 3,
       name: "Reliance Industries Ltd",
-      contact: "amit.patel@ril.com",
+      contactNumber: "+91-76543-21098",
+      email: "amit.patel@ril.com",
+      address: "Mumbai, Maharashtra",
+      gstIn: "27AAACR5055K1Z2",
+      customerId: "CUST000003",
       policies: 15,
       status: "Active",
       value: "₹2.1Cr",
@@ -70,7 +96,11 @@ export default function ClientsPage() {
     {
       id: 4,
       name: "Wipro Corporation",
-      contact: "neha.gupta@wipro.in",
+      contactNumber: "+91-65432-10987",
+      email: "neha.gupta@wipro.in",
+      address: "Pune, Maharashtra",
+      gstIn: "27AAACW7387Q1Z6",
+      customerId: "CUST000004",
       policies: 3,
       status: "Pending",
       value: "₹34.5L",
@@ -78,138 +108,43 @@ export default function ClientsPage() {
     {
       id: 5,
       name: "Mahindra & Mahindra",
-      contact: "suresh.reddy@mahindra.com",
+      contactNumber: "+91-91234-56780",
+      email: "suresh.reddy@mahindra.com",
+      address: "Hyderabad, Telangana",
+      gstIn: "36AAACM2702L1Z8",
+      customerId: "CUST000005",
       policies: 20,
       status: "Active",
       value: "₹3.15Cr",
     },
-    {
-      id: 6,
-      name: "Blue Ocean Enterprises",
-      contact: "lisa.anderson@blueocean.com",
-      policies: 6,
-      status: "Active",
-      value: "$67,800",
-    },
-    {
-      id: 7,
-      name: "NextGen Technologies",
-      contact: "robert.chen@nextgen.com",
-      policies: 18,
-      status: "Active",
-      value: "$298,000",
-    },
-    {
-      id: 8,
-      name: "Metro Financial Group",
-      contact: "jennifer.white@metrofin.com",
-      policies: 11,
-      status: "Active",
-      value: "$156,700",
-    },
-    {
-      id: 9,
-      name: "Sunrise Healthcare",
-      contact: "thomas.martin@sunrise.com",
-      policies: 9,
-      status: "Pending",
-      value: "$92,300",
-    },
-    {
-      id: 10,
-      name: "Pacific Trading Co",
-      contact: "amanda.lee@pacific.com",
-      policies: 14,
-      status: "Active",
-      value: "$187,500",
-    },
-    {
-      id: 11,
-      name: "Apex Manufacturing",
-      contact: "kevin.rodriguez@apex.com",
-      policies: 22,
-      status: "Active",
-      value: "$345,000",
-    },
-    {
-      id: 12,
-      name: "Diamond Real Estate",
-      contact: "maria.garcia@diamond.com",
-      policies: 7,
-      status: "Active",
-      value: "$78,900",
-    },
-    {
-      id: 13,
-      name: "Velocity Logistics",
-      contact: "james.taylor@velocity.com",
-      policies: 13,
-      status: "Active",
-      value: "$165,400",
-    },
-    {
-      id: 14,
-      name: "Pinnacle Consulting",
-      contact: "susan.miller@pinnacle.com",
-      policies: 5,
-      status: "Pending",
-      value: "$45,200",
-    },
-    {
-      id: 15,
-      name: "Silverline Insurance",
-      contact: "daniel.wilson@silverline.com",
-      policies: 16,
-      status: "Active",
-      value: "$223,600",
-    },
-    {
-      id: 16,
-      name: "Horizon Retail Group",
-      contact: "patricia.moore@horizon.com",
-      policies: 10,
-      status: "Active",
-      value: "$134,800",
-    },
-    {
-      id: 17,
-      name: "Crystal Energy Solutions",
-      contact: "christopher.davis@crystal.com",
-      policies: 19,
-      status: "Active",
-      value: "$267,900",
-    },
-    {
-      id: 18,
-      name: "Omega Construction",
-      contact: "nancy.johnson@omega.com",
-      policies: 8,
-      status: "Active",
-      value: "$98,500",
-    },
-    {
-      id: 19,
-      name: "Elite Automotive",
-      contact: "mark.harris@elite.com",
-      policies: 12,
-      status: "Pending",
-      value: "$143,200",
-    },
-    {
-      id: 20,
-      name: "Stellar Communications",
-      contact: "linda.clark@stellar.com",
-      policies: 17,
-      status: "Active",
-      value: "$245,700",
-    },
-  ];
+  ]);
 
   const handleAddClient = () => {
-    console.log("Adding client:", newClient);
-    // Here you would typically send the data to your backend
+    const nextId = clients.length
+      ? Math.max(...clients.map((c) => c.id)) + 1
+      : 1;
+    const nextCustomerId = `CUST${String(nextId).padStart(6, "0")}`;
+    const newEntry: Client = {
+      id: nextId,
+      name: newClient.name.trim() || "Unnamed Client",
+      contactNumber: newClient.contactNumber.trim(),
+      email: newClient.email.trim(),
+      address: newClient.address.trim(),
+      gstIn: newClient.gstIn.trim(),
+      customerId: nextCustomerId,
+      policies: 0,
+      status: "Active",
+      value: "₹0",
+    };
+    setClients((prev) => [newEntry, ...prev]);
     setIsAddClientOpen(false);
-    setNewClient({ name: "", contact: "", policies: "", value: "" });
+    setNewClient({
+      name: "",
+      contactNumber: "",
+      email: "",
+      address: "",
+      gstIn: "",
+    });
   };
 
   const handleViewDetails = (clientId: number) => {
@@ -245,7 +180,10 @@ export default function ClientsPage() {
   const totalPages = Math.ceil(clients.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentClients = clients.slice(startIndex, endIndex);
+  const currentClients = useMemo(
+    () => clients.slice(startIndex, endIndex),
+    [clients, startIndex, endIndex]
+  );
 
   const handlePreviousPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -295,16 +233,19 @@ export default function ClientsPage() {
                   Client Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                  Contact
+                  Contact No.
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  GSTIN
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Customer ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                   Policies
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                  Total Value
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                   WhatsApp
@@ -333,26 +274,23 @@ export default function ClientsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="text-sm text-gray-600">{client.contact}</p>
+                    <p className="text-sm text-gray-600">
+                      {client.contactNumber}
+                    </p>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <p className="text-sm text-gray-600">{client.email}</p>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <p className="text-sm text-gray-600">
+                      {client.gstIn || "—"}
+                    </p>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <p className="text-sm text-gray-900">{client.customerId}</p>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <p className="text-sm text-gray-900">{client.policies}</p>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        client.status === "Active"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {client.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="text-sm font-medium text-gray-900">
-                      {client.value}
-                    </p>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <DropdownMenu>
@@ -465,37 +403,47 @@ export default function ClientsPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="contact">Contact Email</Label>
+              <Label htmlFor="contactNumber">Contact Number</Label>
               <Input
-                id="contact"
+                id="contactNumber"
+                placeholder="+91-98765-43210"
+                value={newClient.contactNumber}
+                onChange={(e) =>
+                  setNewClient({ ...newClient, contactNumber: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
                 type="email"
                 placeholder="contact@company.com"
-                value={newClient.contact}
+                value={newClient.email}
                 onChange={(e) =>
-                  setNewClient({ ...newClient, contact: e.target.value })
+                  setNewClient({ ...newClient, email: e.target.value })
                 }
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="policies">Number of Policies</Label>
+              <Label htmlFor="gstIn">GSTIN</Label>
               <Input
-                id="policies"
-                type="number"
-                placeholder="0"
-                value={newClient.policies}
+                id="gstIn"
+                placeholder="27AAACT2702R1ZN"
+                value={newClient.gstIn}
                 onChange={(e) =>
-                  setNewClient({ ...newClient, policies: e.target.value })
+                  setNewClient({ ...newClient, gstIn: e.target.value })
                 }
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="value">Total Value</Label>
+              <Label htmlFor="address">Address</Label>
               <Input
-                id="value"
-                placeholder="$0"
-                value={newClient.value}
+                id="address"
+                placeholder="City, State"
+                value={newClient.address}
                 onChange={(e) =>
-                  setNewClient({ ...newClient, value: e.target.value })
+                  setNewClient({ ...newClient, address: e.target.value })
                 }
               />
             </div>

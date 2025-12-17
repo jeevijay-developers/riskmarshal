@@ -4,24 +4,37 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Shield, Eye, EyeOff } from "lucide-react";
+import { Shield, Eye, EyeOff, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import { authApi } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    if (email === "admin@gmail.com" && password === "admin1234") {
-      router.push("/dashboard");
-      return;
+    try {
+      const res = await authApi.login(email, password);
+      if (res.success && res.data?.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        toast.success("Login successful!");
+        router.push("/dashboard");
+      } else {
+        toast.error(res.message || "Login failed");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Invalid email or password");
+    } finally {
+      setLoading(false);
     }
-    toast.error("Invalid email or password");
   };
 
   return (
@@ -98,9 +111,17 @@ export default function LoginPage() {
 
             <Button
               type="submit"
+              disabled={loading}
               className="w-full bg-[#ab792e] hover:bg-[#8d6325] text-white h-11"
             >
-              Sign In
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
 
             {/* <div className="text-center">

@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +29,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UserCog, Plus, Search, Filter, Mail, Phone, MapPin, Eye, Briefcase, TrendingUp, Calendar, DollarSign } from "lucide-react";
+import {
+  UserCog,
+  Plus,
+  Search,
+  Filter,
+  Mail,
+  Phone,
+  MapPin,
+  Eye,
+  Briefcase,
+  TrendingUp,
+  Calendar,
+  DollarSign,
+} from "lucide-react";
+import { masterApi } from "@/lib/api";
+
+const categoryOrder: Record<string, number> = {
+  Motor: 0,
+  "Non-Motor": 1,
+  Health: 2,
+  Life: 3,
+};
 
 interface Agent {
   id: string;
@@ -31,12 +58,13 @@ interface Agent {
   email: string;
   phone: string;
   location: string;
-  status: 'Active' | 'Inactive';
+  status: "Active" | "Inactive";
   policies: number;
   commission: string;
   joinDate?: string;
   address?: string;
   specialization?: string;
+  specializationId?: string;
 }
 
 export default function SubAgentManagement() {
@@ -44,63 +72,66 @@ export default function SubAgentManagement() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  
+  const [policyTypes, setPolicyTypes] = useState<any[]>([]);
+
   const [agents, setAgents] = useState<Agent[]>([
-    { 
-      id: "SA-001", 
-      name: "Ramesh Chandra", 
-      email: "ramesh.chandra@email.com", 
-      phone: "+91-98765-43210", 
-      location: "Delhi", 
-      status: "Active", 
-      policies: 45, 
+    {
+      id: "SA-001",
+      name: "Ramesh Chandra",
+      email: "ramesh.chandra@email.com",
+      phone: "+91-98765-43210",
+      location: "Delhi",
+      status: "Active",
+      policies: 45,
       commission: "₹1,60,000",
       joinDate: "Jan 15, 2023",
       address: "123, Connaught Place, New Delhi, Delhi",
-      specialization: "Motor & Home Insurance"
+      specialization: "Motor & Home Insurance",
     },
-    { 
-      id: "SA-002", 
-      name: "Sunita Sharma", 
-      email: "sunita.sharma@email.com", 
-      phone: "+91-87654-32109", 
-      location: "Mumbai", 
-      status: "Active", 
-      policies: 38, 
+    {
+      id: "SA-002",
+      name: "Sunita Sharma",
+      email: "sunita.sharma@email.com",
+      phone: "+91-87654-32109",
+      location: "Mumbai",
+      status: "Active",
+      policies: 38,
       commission: "₹1,42,500",
       joinDate: "Mar 10, 2023",
       address: "456, Andheri West, Mumbai, Maharashtra",
-      specialization: "Life & Health Insurance"
+      specialization: "Life & Health Insurance",
     },
-    { 
-      id: "SA-003", 
-      name: "Deepak Kumar", 
-      email: "deepak.kumar@email.com", 
-      phone: "+91-76543-21098", 
-      location: "Bangalore", 
-      status: "Inactive", 
-      policies: 22, 
+    {
+      id: "SA-003",
+      name: "Deepak Kumar",
+      email: "deepak.kumar@email.com",
+      phone: "+91-76543-21098",
+      location: "Bangalore",
+      status: "Inactive",
+      policies: 22,
       commission: "₹77,000",
       joinDate: "Aug 22, 2023",
       address: "789, Koramangala, Bangalore, Karnataka",
-      specialization: "Business Insurance"
+      specialization: "Business Insurance",
     },
-    { 
-      id: "SA-004", 
-      name: "Pooja Singh", 
-      email: "pooja.singh@email.com", 
-      phone: "+91-65432-10987", 
-      location: "Pune", 
-      status: "Active", 
-      policies: 52, 
+    {
+      id: "SA-004",
+      name: "Pooja Singh",
+      email: "pooja.singh@email.com",
+      phone: "+91-65432-10987",
+      location: "Pune",
+      status: "Active",
+      policies: 52,
       commission: "₹1,84,000",
       joinDate: "May 05, 2022",
       address: "321, Viman Nagar, Pune, Maharashtra",
-      specialization: "Comprehensive Insurance"
+      specialization: "Comprehensive Insurance",
     },
   ]);
 
-  const [newAgent, setNewAgent] = useState<Omit<Agent, 'id' | 'policies' | 'commission'>>({
+  const [newAgent, setNewAgent] = useState<
+    Omit<Agent, "id" | "policies" | "commission">
+  >({
     name: "",
     email: "",
     phone: "",
@@ -108,18 +139,45 @@ export default function SubAgentManagement() {
     status: "Active",
     joinDate: "",
     address: "",
-    specialization: ""
+    specialization: "",
+    specializationId: "",
   });
+
+  useEffect(() => {
+    masterApi.getPolicyTypes().then((res) => {
+      setPolicyTypes(res.data || []);
+    });
+  }, []);
+
+  const groupedPolicyTypes = useMemo(() => {
+    const grouped: Record<string, any[]> = {};
+    for (const pt of policyTypes) {
+      const key = pt.category || "Other";
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(pt);
+    }
+    return Object.entries(grouped)
+      .sort((a, b) => {
+        const rankA = categoryOrder[a[0]] ?? Number.MAX_SAFE_INTEGER;
+        const rankB = categoryOrder[b[0]] ?? Number.MAX_SAFE_INTEGER;
+        return rankA - rankB;
+      })
+      .map(([category, items]) => ({
+        category,
+        items: items.sort((a, b) => (a.name || "").localeCompare(b.name || "")),
+      }));
+  }, [categoryOrder, policyTypes]);
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
-    
+
     if (!newAgent.name.trim()) errors.name = "Name is required";
     if (!newAgent.email.trim()) errors.email = "Email is required";
     if (!newAgent.phone.trim()) errors.phone = "Phone number is required";
     if (!newAgent.location.trim()) errors.location = "Location is required";
     if (!newAgent.address?.trim()) errors.address = "Address is required";
-    if (!newAgent.specialization?.trim()) errors.specialization = "Specialization is required";
+    if (!newAgent.specializationId?.trim())
+      errors.specialization = "Specialization is required";
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (newAgent.email && !emailRegex.test(newAgent.email)) {
@@ -140,12 +198,17 @@ export default function SubAgentManagement() {
       return;
     }
 
-    const newId = `SA-${String(agents.length + 1).padStart(3, '0')}`;
+    const newId = `SA-${String(agents.length + 1).padStart(3, "0")}`;
+    const selectedPolicyType = policyTypes.find(
+      (pt) => pt._id === newAgent.specializationId
+    );
+
     const agentToAdd: Agent = {
       ...newAgent,
+      specialization: selectedPolicyType?.name || newAgent.specialization,
       id: newId,
       policies: 0,
-      commission: "₹0"
+      commission: "₹0",
     };
 
     setAgents([...agents, agentToAdd]);
@@ -162,7 +225,8 @@ export default function SubAgentManagement() {
       status: "Active",
       joinDate: "",
       address: "",
-      specialization: ""
+      specialization: "",
+      specializationId: "",
     });
     setFormErrors({});
   };
@@ -176,10 +240,14 @@ export default function SubAgentManagement() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Sub Agent Management</h1>
-          <p className="text-gray-600 mt-1">Manage and oversee all sub agents and their performance</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Sub Agent Management
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Manage and oversee all sub agents and their performance
+          </p>
         </div>
-        <Button 
+        <Button
           className="bg-[#ab792e] hover:bg-[#8d6325]"
           onClick={() => setIsAddModalOpen(true)}
         >
@@ -218,13 +286,17 @@ export default function SubAgentManagement() {
             <UserCog className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{agents.filter(a => a.status === 'Active').length}</div>
+            <div className="text-2xl font-bold">
+              {agents.filter((a) => a.status === "Active").length}
+            </div>
             <p className="text-xs text-muted-foreground">91% of total</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Top Performers</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Top Performers
+            </CardTitle>
             <UserCog className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
@@ -234,7 +306,9 @@ export default function SubAgentManagement() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Commission</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Avg Commission
+            </CardTitle>
             <UserCog className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
@@ -248,16 +322,26 @@ export default function SubAgentManagement() {
       <Card>
         <CardHeader>
           <CardTitle>Sub Agents</CardTitle>
-          <CardDescription>Manage your network of sub agents and their performance</CardDescription>
+          <CardDescription>
+            Manage your network of sub agents and their performance
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {agents.map((agent) => (
-              <div key={agent.id} className="flex items-center justify-between p-4 border rounded-lg">
+              <div
+                key={agent.id}
+                className="flex items-center justify-between p-4 border rounded-lg"
+              >
                 <div className="flex items-center space-x-4">
                   <Avatar>
                     <AvatarImage src={`/placeholder-avatar-${agent.id}.jpg`} />
-                    <AvatarFallback>{agent.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    <AvatarFallback>
+                      {agent.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium">{agent.name}</p>
@@ -284,15 +368,19 @@ export default function SubAgentManagement() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <Badge variant={agent.status === 'Active' ? 'default' : 'secondary'}>
+                  <Badge
+                    variant={
+                      agent.status === "Active" ? "default" : "secondary"
+                    }
+                  >
                     {agent.status}
                   </Badge>
                   <div className="text-right">
                     <p className="text-sm font-medium">Commission</p>
                     <p className="text-sm text-gray-600">{agent.commission}</p>
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => handleViewProfile(agent)}
                   >
@@ -315,7 +403,7 @@ export default function SubAgentManagement() {
               Fill in all the required details to add a new sub agent.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -324,7 +412,9 @@ export default function SubAgentManagement() {
                   id="name"
                   placeholder="Enter full name"
                   value={newAgent.name}
-                  onChange={(e) => setNewAgent({...newAgent, name: e.target.value})}
+                  onChange={(e) =>
+                    setNewAgent({ ...newAgent, name: e.target.value })
+                  }
                   className={formErrors.name ? "border-red-500" : ""}
                 />
                 {formErrors.name && (
@@ -339,7 +429,9 @@ export default function SubAgentManagement() {
                   type="email"
                   placeholder="agent@example.com"
                   value={newAgent.email}
-                  onChange={(e) => setNewAgent({...newAgent, email: e.target.value})}
+                  onChange={(e) =>
+                    setNewAgent({ ...newAgent, email: e.target.value })
+                  }
                   className={formErrors.email ? "border-red-500" : ""}
                 />
                 {formErrors.email && (
@@ -355,7 +447,9 @@ export default function SubAgentManagement() {
                   id="phone"
                   placeholder="+91-xxxxx-xxxxx"
                   value={newAgent.phone}
-                  onChange={(e) => setNewAgent({...newAgent, phone: e.target.value})}
+                  onChange={(e) =>
+                    setNewAgent({ ...newAgent, phone: e.target.value })
+                  }
                   className={formErrors.phone ? "border-red-500" : ""}
                 />
                 {formErrors.phone && (
@@ -369,7 +463,9 @@ export default function SubAgentManagement() {
                   id="location"
                   placeholder="City"
                   value={newAgent.location}
-                  onChange={(e) => setNewAgent({...newAgent, location: e.target.value})}
+                  onChange={(e) =>
+                    setNewAgent({ ...newAgent, location: e.target.value })
+                  }
                   className={formErrors.location ? "border-red-500" : ""}
                 />
                 {formErrors.location && (
@@ -384,7 +480,9 @@ export default function SubAgentManagement() {
                 id="address"
                 placeholder="Complete address with city and state"
                 value={newAgent.address}
-                onChange={(e) => setNewAgent({...newAgent, address: e.target.value})}
+                onChange={(e) =>
+                  setNewAgent({ ...newAgent, address: e.target.value })
+                }
                 className={formErrors.address ? "border-red-500" : ""}
               />
               {formErrors.address && (
@@ -395,15 +493,39 @@ export default function SubAgentManagement() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="specialization">Specialization *</Label>
-                <Input
-                  id="specialization"
-                  placeholder="e.g., Motor & Home Insurance"
-                  value={newAgent.specialization}
-                  onChange={(e) => setNewAgent({...newAgent, specialization: e.target.value})}
-                  className={formErrors.specialization ? "border-red-500" : ""}
-                />
+                <Select
+                  value={newAgent.specializationId || undefined}
+                  onValueChange={(value) => {
+                    const selected = policyTypes.find((pt) => pt._id === value);
+                    setNewAgent({
+                      ...newAgent,
+                      specializationId: value,
+                      specialization: selected?.name || "",
+                    });
+                  }}
+                >
+                  <SelectTrigger id="specialization">
+                    <SelectValue placeholder="Select policy type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {groupedPolicyTypes.map(({ category, items }) => (
+                      <div key={category}>
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase pointer-events-none">
+                          {category}
+                        </div>
+                        {items.map((pt) => (
+                          <SelectItem key={pt._id} value={pt._id}>
+                            {pt.name}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {formErrors.specialization && (
-                  <p className="text-red-500 text-xs">{formErrors.specialization}</p>
+                  <p className="text-red-500 text-xs">
+                    {formErrors.specialization}
+                  </p>
                 )}
               </div>
 
@@ -413,7 +535,9 @@ export default function SubAgentManagement() {
                   id="joinDate"
                   type="date"
                   value={newAgent.joinDate}
-                  onChange={(e) => setNewAgent({...newAgent, joinDate: e.target.value})}
+                  onChange={(e) =>
+                    setNewAgent({ ...newAgent, joinDate: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -422,7 +546,9 @@ export default function SubAgentManagement() {
               <Label htmlFor="status">Status</Label>
               <Select
                 value={newAgent.status}
-                onValueChange={(value: 'Active' | 'Inactive') => setNewAgent({...newAgent, status: value})}
+                onValueChange={(value: "Active" | "Inactive") =>
+                  setNewAgent({ ...newAgent, status: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
@@ -434,12 +560,21 @@ export default function SubAgentManagement() {
               </Select>
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => {setIsAddModalOpen(false); resetForm();}}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsAddModalOpen(false);
+                resetForm();
+              }}
+            >
               Cancel
             </Button>
-            <Button onClick={handleSaveAgent} className="bg-[#ab792e] hover:bg-[#8d6325]">
+            <Button
+              onClick={handleSaveAgent}
+              className="bg-[#ab792e] hover:bg-[#8d6325]"
+            >
               Save Agent
             </Button>
           </DialogFooter>
@@ -455,11 +590,13 @@ export default function SubAgentManagement() {
               Complete information for this sub agent
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedAgent && (
             <div className="space-y-6">
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Personal Information</h3>
+                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
+                  Personal Information
+                </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center space-x-3">
                     <UserCog className="w-5 h-5 text-gray-500" />
@@ -502,7 +639,9 @@ export default function SubAgentManagement() {
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Performance Details</h3>
+                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
+                  Performance Details
+                </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center space-x-3">
                     <Briefcase className="w-5 h-5 text-gray-500" />
@@ -522,7 +661,13 @@ export default function SubAgentManagement() {
                     <TrendingUp className="w-5 h-5 text-gray-500" />
                     <div>
                       <p className="text-sm text-gray-600">Status</p>
-                      <Badge variant={selectedAgent.status === 'Active' ? 'default' : 'secondary'}>
+                      <Badge
+                        variant={
+                          selectedAgent.status === "Active"
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
                         {selectedAgent.status}
                       </Badge>
                     </div>
@@ -542,14 +687,16 @@ export default function SubAgentManagement() {
                     <Briefcase className="w-5 h-5 text-gray-500 mt-1" />
                     <div>
                       <p className="text-sm text-gray-600">Specialization</p>
-                      <p className="font-medium">{selectedAgent.specialization}</p>
+                      <p className="font-medium">
+                        {selectedAgent.specialization}
+                      </p>
                     </div>
                   </div>
                 )}
               </div>
             </div>
           )}
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>
               Close
