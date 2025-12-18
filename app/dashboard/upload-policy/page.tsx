@@ -39,7 +39,7 @@ import {
   getPolicyTypes,
 } from "@/server/policies";
 import { getSubagents } from "@/server/subagents";
-import { getClients } from "@/server/clients";
+import { getClients, searchClients } from "@/server/clients";
 import { useEffect } from "react";
 
 interface ExtractedData {
@@ -120,6 +120,9 @@ export default function UploadPolicyPage() {
   const [policyTypes, setPolicyTypes] = useState<any[]>([]);
   const [subagents, setSubagents] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
+  const [clientOptions, setClientOptions] = useState<any[]>([]);
+  const [clientSearch, setClientSearch] = useState<string>("");
+  const [clientSearchLoading, setClientSearchLoading] = useState(false);
   const [selectedInsurer, setSelectedInsurer] = useState<string>("");
   const [selectedPolicyType, setSelectedPolicyType] = useState<string>("");
   const [selectedSubagent, setSelectedSubagent] = useState<string>("");
@@ -151,7 +154,11 @@ export default function UploadPolicyPage() {
       setPolicyTypes(sorted);
     });
     getSubagents().then((res) => setSubagents(res.data || []));
-    getClients().then((res) => setClients(res.data || []));
+    getClients().then((res) => {
+      const data = res.data || [];
+      setClients(data);
+      setClientOptions(data);
+    });
   }, [categoryOrder]);
 
   const groupedPolicyTypes = useMemo(() => {
@@ -169,6 +176,27 @@ export default function UploadPolicyPage() {
       })
       .map(([category, items]) => ({ category, items }));
   }, [policyTypes, categoryOrder]);
+
+  useEffect(() => {
+    if (!clientSearch.trim()) {
+      setClientOptions(clients);
+      return;
+    }
+
+    const handle = setTimeout(async () => {
+      try {
+        setClientSearchLoading(true);
+        const results = await searchClients(clientSearch);
+        setClientOptions(results);
+      } catch (err) {
+        console.error("Client search failed", err);
+      } finally {
+        setClientSearchLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(handle);
+  }, [clientSearch, clients]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -457,7 +485,26 @@ export default function UploadPolicyPage() {
                     <SelectValue placeholder="Select client" />
                   </SelectTrigger>
                   <SelectContent>
-                    {clients.map((client) => (
+                    <div className="px-2 pb-2 sticky top-0 bg-white">
+                      <Input
+                        autoFocus
+                        placeholder="Search client by name, phone, or email"
+                        value={clientSearch}
+                        onChange={(e) => setClientSearch(e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+                    {clientSearchLoading && (
+                      <SelectItem value="loading" disabled>
+                        Searching...
+                      </SelectItem>
+                    )}
+                    {!clientSearchLoading && clientOptions.length === 0 && (
+                      <SelectItem value="no-results" disabled>
+                        No clients found
+                      </SelectItem>
+                    )}
+                    {clientOptions.map((client) => (
                       <SelectItem key={client._id} value={client._id}>
                         {client.name}
                         {client.contactNumber

@@ -88,10 +88,14 @@ export async function deleteClient(
 
 // ============ HELPER METHODS ============
 
-// Search clients by name or contact
+// Search clients by name/contact/email/customerId
 export async function searchClients(searchTerm: string): Promise<Client[]> {
-  const response = await getClients({ search: searchTerm });
-  return response.success ? response.data : [];
+  if (!searchTerm.trim()) return [];
+  const query = new URLSearchParams({ query: searchTerm.trim() }).toString();
+  const res = await request<{ success: boolean; data: Client[] }>(
+    `/clients/search?${query}`
+  );
+  return res.success ? res.data : [];
 }
 
 // Get client by customer ID
