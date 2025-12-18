@@ -216,7 +216,7 @@ export default function PolicyDetailPage() {
             <CheckCircle className="w-4 h-4 mr-2" /> Approve Payment
           </Button>
         )}
-        {policy.quotationPdfUrl && (
+        {/* {policy.quotationPdfUrl && (
           <Button variant="outline" asChild>
             <a
               href={policy.quotationPdfUrl}
@@ -226,7 +226,7 @@ export default function PolicyDetailPage() {
               <Download className="w-4 h-4 mr-2" /> Quotation PDF
             </a>
           </Button>
-        )}
+        )} */}
         {policy.policyPdfUrl && (
           <Button variant="outline" asChild>
             <a

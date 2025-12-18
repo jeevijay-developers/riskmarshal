@@ -31,7 +31,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { policyApi, masterApi, subagentApi } from "@/lib/api";
+import {
+  uploadPolicy,
+  updateOcrData,
+  updatePolicy,
+  getInsurers,
+  getPolicyTypes,
+} from "@/server/policies";
+import { getSubagents } from "@/server/subagents";
+import { getClients } from "@/server/clients";
 import { useEffect } from "react";
 
 interface ExtractedData {
@@ -111,21 +119,26 @@ export default function UploadPolicyPage() {
   const [insurers, setInsurers] = useState<any[]>([]);
   const [policyTypes, setPolicyTypes] = useState<any[]>([]);
   const [subagents, setSubagents] = useState<any[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
   const [selectedInsurer, setSelectedInsurer] = useState<string>("");
   const [selectedPolicyType, setSelectedPolicyType] = useState<string>("");
   const [selectedSubagent, setSelectedSubagent] = useState<string>("");
+  const [selectedClient, setSelectedClient] = useState<string>("");
   const directSubagentValue = "direct";
 
-  const categoryOrder: Record<string, number> = {
-    Motor: 0,
-    "Non-Motor": 1,
-    Health: 2,
-    Life: 3,
-  };
+  const categoryOrder: Record<string, number> = useMemo(
+    () => ({
+      Motor: 0,
+      "Non-Motor": 1,
+      Health: 2,
+      Life: 3,
+    }),
+    []
+  );
 
   useEffect(() => {
-    masterApi.getInsurers().then((res) => setInsurers(res.data || []));
-    masterApi.getPolicyTypes().then((res) => {
+    getInsurers().then((res) => setInsurers(res.data || []));
+    getPolicyTypes().then((res) => {
       const sorted = (res.data || []).slice().sort((a: any, b: any) => {
         const categoryRankA =
           categoryOrder[a.category] ?? Number.MAX_SAFE_INTEGER;
@@ -137,8 +150,9 @@ export default function UploadPolicyPage() {
       });
       setPolicyTypes(sorted);
     });
-    subagentApi.list().then((res) => setSubagents(res.data || []));
-  }, []);
+    getSubagents().then((res) => setSubagents(res.data || []));
+    getClients().then((res) => setClients(res.data || []));
+  }, [categoryOrder]);
 
   const groupedPolicyTypes = useMemo(() => {
     const grouped: Record<string, any[]> = {};
@@ -154,7 +168,7 @@ export default function UploadPolicyPage() {
         return rankA - rankB;
       })
       .map(([category, items]) => ({ category, items }));
-  }, [policyTypes]);
+  }, [policyTypes, categoryOrder]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -185,8 +199,8 @@ export default function UploadPolicyPage() {
 
   const handleUpload = async () => {
     if (!file) return;
-    if (!selectedInsurer || !selectedPolicyType) {
-      setError("Please select insurer and policy type");
+    if (!selectedInsurer || !selectedPolicyType || !selectedClient) {
+      setError("Please select insurer, policy type, and client");
       return;
     }
 
@@ -198,11 +212,12 @@ export default function UploadPolicyPage() {
       fd.append("pdf", file);
       fd.append("insurerId", selectedInsurer);
       fd.append("policyTypeId", selectedPolicyType);
+      fd.append("clientId", selectedClient);
       if (selectedSubagent && selectedSubagent !== directSubagentValue) {
         fd.append("subagentId", selectedSubagent);
       }
 
-      const res = await policyApi.upload(fd);
+      const res = await uploadPolicy(fd);
       setPolicyId(res.data.policyId);
 
       const extracted =
@@ -223,14 +238,25 @@ export default function UploadPolicyPage() {
     if (!policyId) return;
     setUploading(true);
     try {
-      await policyApi.updateOcrData(policyId, formData);
+      await updateOcrData(policyId, formData);
       // Update policy with extracted/corrected fields
-      await policyApi.update(policyId, {
+      const clean = (obj: any): any => {
+        if (obj === null || obj === undefined) return undefined;
+        if (typeof obj !== "object") return obj;
+        const entries = Object.entries(obj)
+          .map(([k, v]) => [k, clean(v)])
+          .filter(([, v]) => v !== undefined && v !== null && v !== "");
+        if (!entries.length) return undefined;
+        return Object.fromEntries(entries);
+      };
+
+      const payload = clean({
+        client: selectedClient,
         subagent:
           selectedSubagent && selectedSubagent !== directSubagentValue
             ? selectedSubagent
-            : null,
-        policyDetails: {
+            : undefined,
+        policyDetails: clean({
           policyNumber: formData.policyNumber,
           periodFrom: formData.policy?.periodFrom,
           periodTo: formData.policy?.periodTo,
@@ -238,32 +264,34 @@ export default function UploadPolicyPage() {
           invoiceDate: formData.policy?.invoiceDate,
           gstIn: formData.customer?.gstIn,
           customerId: formData.customer?.customerId,
-        },
-        vehicleDetails: formData.vehicle,
-        premiumDetails: {
-          ownDamage: {
+        }),
+        vehicleDetails: clean(formData.vehicle || {}),
+        premiumDetails: clean({
+          ownDamage: clean({
             basicOD: formData.premium?.ownDamage?.basicOD,
             addOnZeroDep: formData.premium?.ownDamage?.addOnZeroDep,
             addOnConsumables: formData.premium?.ownDamage?.addOnConsumables,
             others: formData.premium?.ownDamage?.others,
             total: formData.premium?.ownDamage?.total,
-          },
-          liability: {
+          }),
+          liability: clean({
             basicTP: formData.premium?.liability?.basicTP,
             paCoverOwnerDriver: formData.premium?.liability?.paCoverOwnerDriver,
             llForPaidDriver: formData.premium?.liability?.llForPaidDriver,
             llEmployees: formData.premium?.liability?.llEmployees,
             otherLiability: formData.premium?.liability?.otherLiability,
             total: formData.premium?.liability?.total,
-          },
+          }),
           netPremium: formData.premium?.packagePremium,
           gst: formData.premium?.gst,
           finalPremium: formData.premium?.finalPremium,
           compulsoryDeductible: formData.premium?.compulsoryDeductible,
           voluntaryDeductible: formData.premium?.voluntaryDeductible,
           ncb: formData.premium?.ownDamage?.ncbPercent,
-        },
+        }),
       });
+
+      await updatePolicy(policyId, payload || {});
       setStep("complete");
     } catch (err: any) {
       setError(err.message || "Save failed");
@@ -375,7 +403,7 @@ export default function UploadPolicyPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label>Insurer</Label>
                 <Select
@@ -415,6 +443,27 @@ export default function UploadPolicyPage() {
                           </SelectItem>
                         ))}
                       </div>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Client</Label>
+                <Select
+                  value={selectedClient}
+                  onValueChange={setSelectedClient}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select client" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map((client) => (
+                      <SelectItem key={client._id} value={client._id}>
+                        {client.name}
+                        {client.contactNumber
+                          ? ` (${client.contactNumber})`
+                          : ""}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -728,13 +777,14 @@ export default function UploadPolicyPage() {
                   setExtractedData(null);
                   setFormData({});
                   setSelectedSubagent("");
+                  setSelectedClient("");
                 }}
               >
                 Upload Another
               </Button>
               <Button
                 className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
-                onClick={() => router.push(`/dashboard/policy/${policyId}`)}
+                onClick={() => router.push(`/dashboard/active-policies`)}
               >
                 View Policy
               </Button>

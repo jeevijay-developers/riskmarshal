@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Search,
   Filter,
@@ -9,6 +9,7 @@ import {
   Eye,
   Pencil,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,23 +30,35 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
+import toast from "react-hot-toast";
+import {
+  getClients,
+  createClient,
+  updateClient as updateClientApi,
+  deleteClient as deleteClientApi,
+  searchClients,
+} from "@/server/clients";
 
 interface Client {
-  id: number;
+  _id: string;
   name: string;
   contactNumber: string;
-  email: string;
+  email?: string;
   address?: string;
   gstIn?: string;
   customerId: string;
-  policies: number;
-  status: "Active" | "Pending";
-  value: string;
+  policies?: string[];
+  createdAt?: string;
 }
 
 export default function ClientsPage() {
   const [isAddClientOpen, setIsAddClientOpen] = useState(false);
+  const [isEditClientOpen, setIsEditClientOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [newClient, setNewClient] = useState({
     name: "",
     contactNumber: "",
@@ -56,124 +69,151 @@ export default function ClientsPage() {
 
   const itemsPerPage = 5;
 
-  const [clients, setClients] = useState<Client[]>([
-    {
-      id: 1,
-      name: "Tata Consultancy Services",
-      contactNumber: "+91-98765-43210",
-      email: "rajesh.kumar@tcs.com",
-      address: "Mumbai, Maharashtra",
-      gstIn: "27AAACT2702R1ZN",
-      customerId: "CUST000001",
-      policies: 12,
-      status: "Active",
-      value: "₹1.25Cr",
-    },
-    {
-      id: 2,
-      name: "Infosys Technologies",
-      contactNumber: "+91-87654-32109",
-      email: "priya.sharma@infosys.in",
-      address: "Bengaluru, Karnataka",
-      gstIn: "29AAACI4798L1ZU",
-      customerId: "CUST000002",
-      policies: 8,
-      status: "Active",
-      value: "₹89L",
-    },
-    {
-      id: 3,
-      name: "Reliance Industries Ltd",
-      contactNumber: "+91-76543-21098",
-      email: "amit.patel@ril.com",
-      address: "Mumbai, Maharashtra",
-      gstIn: "27AAACR5055K1Z2",
-      customerId: "CUST000003",
-      policies: 15,
-      status: "Active",
-      value: "₹2.1Cr",
-    },
-    {
-      id: 4,
-      name: "Wipro Corporation",
-      contactNumber: "+91-65432-10987",
-      email: "neha.gupta@wipro.in",
-      address: "Pune, Maharashtra",
-      gstIn: "27AAACW7387Q1Z6",
-      customerId: "CUST000004",
-      policies: 3,
-      status: "Pending",
-      value: "₹34.5L",
-    },
-    {
-      id: 5,
-      name: "Mahindra & Mahindra",
-      contactNumber: "+91-91234-56780",
-      email: "suresh.reddy@mahindra.com",
-      address: "Hyderabad, Telangana",
-      gstIn: "36AAACM2702L1Z8",
-      customerId: "CUST000005",
-      policies: 20,
-      status: "Active",
-      value: "₹3.15Cr",
-    },
-  ]);
+  const [clients, setClients] = useState<Client[]>([]);
 
-  const handleAddClient = () => {
-    const nextId = clients.length
-      ? Math.max(...clients.map((c) => c.id)) + 1
-      : 1;
-    const nextCustomerId = `CUST${String(nextId).padStart(6, "0")}`;
-    const newEntry: Client = {
-      id: nextId,
-      name: newClient.name.trim() || "Unnamed Client",
-      contactNumber: newClient.contactNumber.trim(),
-      email: newClient.email.trim(),
-      address: newClient.address.trim(),
-      gstIn: newClient.gstIn.trim(),
-      customerId: nextCustomerId,
-      policies: 0,
-      status: "Active",
-      value: "₹0",
-    };
-    setClients((prev) => [newEntry, ...prev]);
-    setIsAddClientOpen(false);
-    setNewClient({
-      name: "",
-      contactNumber: "",
-      email: "",
-      address: "",
-      gstIn: "",
-    });
+  // Fetch clients from backend
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const fetchClients = async () => {
+    try {
+      setLoading(true);
+      const response = await getClients();
+      if (response.success && response.data) {
+        setClients(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+      toast.error("Failed to fetch clients");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleViewDetails = (clientId: number) => {
-    console.log("View details for client:", clientId);
-    // Implement view details logic
+  // Search clients
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    if (!query.trim()) {
+      fetchClients();
+      return;
+    }
+    try {
+      const results = await searchClients(query);
+      setClients(results);
+    } catch (error) {
+      console.error("Error searching clients:", error);
+      toast.error("Search failed");
+    }
   };
 
-  const handleEditClient = (clientId: number) => {
-    console.log("Edit client:", clientId);
-    // Implement edit logic
+  const handleAddClient = async () => {
+    try {
+      setSaving(true);
+      const response = await createClient({
+        name: newClient.name.trim() || "Unnamed Client",
+        contactNumber: newClient.contactNumber.trim(),
+        email: newClient.email.trim(),
+        address: newClient.address.trim(),
+        gstIn: newClient.gstIn.trim(),
+      });
+
+      if (response.success && response.data) {
+        setClients((prev) => [response.data, ...prev]);
+        setIsAddClientOpen(false);
+        setNewClient({
+          name: "",
+          contactNumber: "",
+          email: "",
+          address: "",
+          gstIn: "",
+        });
+        toast.success("Client created successfully");
+      }
+    } catch (error) {
+      console.error("Error creating client:", error);
+      toast.error("Failed to create client");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDeleteClient = (clientId: number) => {
-    console.log("Delete client:", clientId);
-    // Implement delete logic
+  const handleViewDetails = (clientId: string) => {
+    const client = clients.find((c) => c._id === clientId);
+    console.log("View details for client:", client);
+    // Implement view details logic - could open a modal with full details
   };
 
-  const handleWhatsAppRenewal = (clientId: number) => {
-    console.log("Sending renewal link via WhatsApp to client:", clientId);
-    // Implement WhatsApp renewal link logic
-    // You would typically open WhatsApp with a pre-filled message
+  const handleEditClient = (clientId: string) => {
+    const client = clients.find((c) => c._id === clientId);
+    if (client) {
+      setEditingClient(client);
+      setIsEditClientOpen(true);
+    }
   };
 
-  const handleWhatsAppNewPolicy = (clientId: number) => {
-    console.log(
-      "Sending new policy document via WhatsApp to client:",
-      clientId
-    );
-    // Implement WhatsApp new policy document logic
+  const handleUpdateClient = async () => {
+    if (!editingClient) return;
+    try {
+      setSaving(true);
+      const response = await updateClientApi(editingClient._id, {
+        name: editingClient.name,
+        contactNumber: editingClient.contactNumber,
+        email: editingClient.email,
+        address: editingClient.address,
+        gstIn: editingClient.gstIn,
+      });
+
+      if (response.success && response.data) {
+        setClients((prev) =>
+          prev.map((c) => (c._id === editingClient._id ? response.data! : c))
+        );
+        setIsEditClientOpen(false);
+        setEditingClient(null);
+        toast.success("Client updated");
+      }
+    } catch (error) {
+      console.error("Error updating client:", error);
+      toast.error("Failed to update client");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteClient = async (clientId: string) => {
+    if (!confirm("Are you sure you want to delete this client?")) return;
+    try {
+      const response = await deleteClientApi(clientId);
+      if (response.success) {
+        setClients((prev) => prev.filter((c) => c._id !== clientId));
+        toast.success("Client deleted");
+      }
+    } catch (error) {
+      console.error("Error deleting client:", error);
+      toast.error("Failed to delete client");
+    }
+  };
+
+  const handleWhatsAppRenewal = (clientId: string) => {
+    const client = clients.find((c) => c._id === clientId);
+    if (client) {
+      const phone = client.contactNumber.replace(/[^0-9]/g, "");
+      const message = encodeURIComponent(
+        `Hi ${client.name}, your insurance policy is due for renewal. Please click here to renew: [Renewal Link]`
+      );
+      window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+    }
+  };
+
+  const handleWhatsAppNewPolicy = (clientId: string) => {
+    const client = clients.find((c) => c._id === clientId);
+    if (client) {
+      const phone = client.contactNumber.replace(/[^0-9]/g, "");
+      const message = encodeURIComponent(
+        `Hi ${client.name}, please find your policy document attached. For any queries, feel free to contact us.`
+      );
+      window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+    }
   };
 
   // Calculate pagination
@@ -192,6 +232,14 @@ export default function ClientsPage() {
   const handleNextPage = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-[#ab792e]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -216,7 +264,12 @@ export default function ClientsPage() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input placeholder="Search clients..." className="pl-10" />
+              <Input
+                placeholder="Search clients..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
             </div>
             <Button variant="outline" className="sm:w-auto">
               <Filter className="w-4 h-4 mr-2" />
@@ -258,7 +311,7 @@ export default function ClientsPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {currentClients.map((client) => (
                 <tr
-                  key={client.id}
+                  key={client._id}
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -290,7 +343,9 @@ export default function ClientsPage() {
                     <p className="text-sm text-gray-900">{client.customerId}</p>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="text-sm text-gray-900">{client.policies}</p>
+                    <p className="text-sm text-gray-900">
+                      {client.policies?.length || 0}
+                    </p>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <DropdownMenu>
@@ -301,13 +356,13 @@ export default function ClientsPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={() => handleWhatsAppRenewal(client.id)}
+                          onClick={() => handleWhatsAppRenewal(client._id)}
                         >
                           <FaWhatsapp className="w-4 h-4 mr-2" />
                           Send Renewal Link
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => handleWhatsAppNewPolicy(client.id)}
+                          onClick={() => handleWhatsAppNewPolicy(client._id)}
                         >
                           <FaWhatsapp className="w-4 h-4 mr-2" />
                           Send Policy Document
@@ -324,20 +379,20 @@ export default function ClientsPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={() => handleViewDetails(client.id)}
+                          onClick={() => handleViewDetails(client._id)}
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           View Details
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => handleEditClient(client.id)}
+                          onClick={() => handleEditClient(client._id)}
                         >
                           <Pencil className="w-4 h-4 mr-2" />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          onClick={() => handleDeleteClient(client.id)}
+                          onClick={() => handleDeleteClient(client._id)}
                           className="text-red-600 focus:text-red-600"
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
@@ -455,8 +510,111 @@ export default function ClientsPage() {
             <Button
               className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
               onClick={handleAddClient}
+              disabled={saving}
             >
+              {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Add Client
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Client Modal */}
+      <Dialog open={isEditClientOpen} onOpenChange={setIsEditClientOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Client</DialogTitle>
+            <DialogDescription>Update the client details.</DialogDescription>
+          </DialogHeader>
+          {editingClient && (
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-name">Client Name</Label>
+                <Input
+                  id="edit-name"
+                  placeholder="Enter client name"
+                  value={editingClient.name}
+                  onChange={(e) =>
+                    setEditingClient({ ...editingClient, name: e.target.value })
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-contactNumber">Contact Number</Label>
+                <Input
+                  id="edit-contactNumber"
+                  placeholder="+91-98765-43210"
+                  value={editingClient.contactNumber}
+                  onChange={(e) =>
+                    setEditingClient({
+                      ...editingClient,
+                      contactNumber: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-email">Email</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  placeholder="contact@company.com"
+                  value={editingClient.email}
+                  onChange={(e) =>
+                    setEditingClient({
+                      ...editingClient,
+                      email: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-gstIn">GSTIN</Label>
+                <Input
+                  id="edit-gstIn"
+                  placeholder="27AAACT2702R1ZN"
+                  value={editingClient.gstIn || ""}
+                  onChange={(e) =>
+                    setEditingClient({
+                      ...editingClient,
+                      gstIn: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-address">Address</Label>
+                <Input
+                  id="edit-address"
+                  placeholder="City, State"
+                  value={editingClient.address || ""}
+                  onChange={(e) =>
+                    setEditingClient({
+                      ...editingClient,
+                      address: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEditClientOpen(false);
+                setEditingClient(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
+              onClick={handleUpdateClient}
+              disabled={saving}
+            >
+              {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Update Client
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -38,6 +38,7 @@ import Image from "next/image";
 const navItems = [
   { name: "Dashboard Overview", href: "/dashboard", icon: LayoutDashboard },
   { name: "Upload Policy", href: "/dashboard/upload-policy", icon: Upload },
+  { name: "Insurers", href: "/dashboard/insurance", icon: Building },
   { name: "Subagents", href: "/dashboard/subagent", icon: UserCog },
   { name: "Payment Approvals", href: "/dashboard/approvals", icon: CreditCard },
   { name: "Clients", href: "/dashboard/clients", icon: Users },

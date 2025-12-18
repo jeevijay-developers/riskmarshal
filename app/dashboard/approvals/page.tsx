@@ -30,7 +30,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { policyApi } from "@/lib/api";
+import {
+  getAllPolicies,
+  generateQuotation,
+  sendQuotation,
+  approvePayment,
+} from "@/server/policies";
 
 interface Policy {
   _id: string;
@@ -52,6 +57,7 @@ interface Policy {
   status: string;
   paymentLink?: string;
   createdAt: string;
+  paymentStatus?: string;
 }
 
 export default function ApprovalsPage() {
@@ -73,10 +79,26 @@ export default function ApprovalsPage() {
   const fetchPolicies = async () => {
     setLoading(true);
     try {
-      const res = await policyApi.getAll({
-        status: "quotation_sent,payment_pending",
+      const res = await getAllPolicies({
+        paymentStatus: "pending",
       });
-      setPolicies(res.policies || []);
+      // Map to local Policy interface
+      const mappedPolicies = (res.policies || []).map((p: any) => ({
+        _id: p._id,
+        quotationId: p.quotationPdfUrl ? p._id : undefined,
+        policyDetails: p.policyDetails,
+        client: typeof p.client === "string" ? { name: p.client } : p.client,
+        insurer:
+          typeof p.insurer === "string"
+            ? { companyName: p.insurer }
+            : p.insurer,
+        premiumDetails: p.premiumDetails,
+        status: p.status,
+        paymentLink: p.paymentLink,
+        createdAt: p.createdAt,
+        paymentStatus: p.paymentStatus,
+      }));
+      setPolicies(mappedPolicies);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -94,14 +116,14 @@ export default function ApprovalsPage() {
     try {
       // Generate quotation if not already done
       if (!selectedPolicy.quotationId) {
-        await policyApi.generateQuotation(selectedPolicy._id);
+        await generateQuotation(selectedPolicy._id);
       }
 
-      const channels: string[] = [];
+      const channels: ("whatsapp" | "email" | "sms")[] = [];
       if (sendWhatsApp) channels.push("whatsapp");
       if (sendEmail) channels.push("email");
 
-      await policyApi.sendQuotation(
+      await sendQuotation(
         selectedPolicy._id,
         channels,
         paymentLink || undefined
@@ -120,7 +142,7 @@ export default function ApprovalsPage() {
     if (!selectedPolicy) return;
     setApproving(true);
     try {
-      await policyApi.approvePayment(selectedPolicy._id);
+      await approvePayment(selectedPolicy._id);
       setApproveModalOpen(false);
       fetchPolicies();
     } catch (err: any) {
@@ -273,7 +295,7 @@ export default function ApprovalsPage() {
                         Send Quotation
                       </Button>
                     )}
-                    {policy.status === "payment_pending" && (
+                    {policy.paymentStatus === "pending" && (
                       <Button
                         size="sm"
                         className="bg-green-600 hover:bg-green-700 text-white"

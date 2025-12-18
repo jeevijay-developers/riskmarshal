@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { FileText, Download, Calendar } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { FileText, Download, Calendar, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,9 +20,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import {
+  getReports,
+  generateReport,
+  downloadReport,
+  deleteReport,
+  Report,
+} from "@/server/reports";
 
 export default function ReportsPage() {
+  const { toast } = useToast();
   const [isGenerateReportOpen, setIsGenerateReportOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [reports, setReports] = useState<Report[]>([]);
   const [reportConfig, setReportConfig] = useState({
     type: "",
     format: "",
@@ -30,47 +42,159 @@ export default function ReportsPage() {
     startDate: "",
     endDate: "",
   });
-  const reports = [
-    {
-      title: "Monthly Revenue Report",
-      description: "Comprehensive revenue breakdown for the month",
-      date: "March 2024",
-      format: "PDF",
-      size: "2.4 MB",
-    },
-    {
-      title: "Claims Analysis",
-      description: "Detailed analysis of processed claims",
-      date: "Q1 2024",
-      format: "XLSX",
-      size: "1.8 MB",
-    },
-    {
-      title: "Client Activity Report",
-      description: "Overview of client engagement and policies",
-      date: "February 2024",
-      format: "PDF",
-      size: "3.1 MB",
-    },
-    {
-      title: "Partner Performance",
-      description: "Insurance partner metrics and KPIs",
-      date: "Q1 2024",
-      format: "PDF",
-      size: "2.7 MB",
-    },
-  ];
 
-  const handleGenerateReport = () => {
-    console.log("Generating report:", reportConfig);
-    // Here you would typically send the request to your backend
-    setIsGenerateReportOpen(false);
-    setReportConfig({
-      type: "",
-      format: "",
-      period: "",
-      startDate: "",
-      endDate: "",
+  const fetchReports = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await getReports();
+      if (response.success) {
+        setReports(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch reports",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
+
+  // Fetch reports on mount
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
+  const handleGenerateReport = async () => {
+    if (!reportConfig.type || !reportConfig.format || !reportConfig.period) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (
+      reportConfig.period === "custom" &&
+      (!reportConfig.startDate || !reportConfig.endDate)
+    ) {
+      toast({
+        title: "Validation Error",
+        description: "Please select start and end dates for custom period",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsGenerating(true);
+      const response = await generateReport({
+        type: reportConfig.type as Report["type"],
+        format: reportConfig.format as Report["format"],
+        period: reportConfig.period,
+        startDate: reportConfig.startDate || undefined,
+        endDate: reportConfig.endDate || undefined,
+      });
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Report generated successfully",
+        });
+        setReports([response.data, ...reports]);
+        setIsGenerateReportOpen(false);
+        setReportConfig({
+          type: "",
+          format: "",
+          period: "",
+          startDate: "",
+          endDate: "",
+        });
+      }
+    } catch (error) {
+      console.error("Error generating report:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate report",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleDownloadReport = async (reportId: string) => {
+    try {
+      const response = await downloadReport(reportId);
+      if (response.success) {
+        // Create a blob and download
+        const dataStr = JSON.stringify(response.data, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = response.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast({
+          title: "Success",
+          description: "Report downloaded successfully",
+        });
+      }
+    } catch (error) {
+      console.error("Error downloading report:", error);
+      toast({
+        title: "Error",
+        description: "Failed to download report",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    try {
+      const response = await deleteReport(reportId);
+      if (response.success) {
+        setReports(reports.filter((r) => r._id !== reportId));
+        toast({
+          title: "Success",
+          description: "Report deleted successfully",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting report:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete report",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getFormatBadgeColor = (format: string) => {
+    switch (format.toLowerCase()) {
+      case "pdf":
+        return "bg-red-100 text-red-700";
+      case "xlsx":
+        return "bg-green-100 text-green-700";
+      case "csv":
+        return "bg-blue-100 text-blue-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -80,7 +204,7 @@ export default function ReportsPage() {
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">Reports</h2>
           <p className="text-sm text-gray-600 mt-1">
-            Access and download your business reports
+            Generate and download your business reports
           </p>
         </div>
         <Button
@@ -92,73 +216,93 @@ export default function ReportsPage() {
         </Button>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Quick Stats
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="text-center p-4 border border-gray-200 rounded-lg">
-            <p className="text-2xl font-semibold text-gray-900">24</p>
-            <p className="text-sm text-gray-600 mt-1">Total Reports</p>
-          </div>
-          <div className="text-center p-4 border border-gray-200 rounded-lg">
-            <p className="text-2xl font-semibold text-gray-900">156</p>
-            <p className="text-sm text-gray-600 mt-1">Downloads</p>
-          </div>
-          <div className="text-center p-4 border border-gray-200 rounded-lg">
-            <p className="text-2xl font-semibold text-gray-900">8</p>
-            <p className="text-sm text-gray-600 mt-1">This Month</p>
-          </div>
-          <div className="text-center p-4 border border-gray-200 rounded-lg">
-            <p className="text-2xl font-semibold text-gray-900">45 MB</p>
-            <p className="text-sm text-gray-600 mt-1">Total Size</p>
-          </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-[#ab792e]" />
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {reports.map((report, index) => (
-          <div
-            key={index}
-            className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
+      ) : reports.length === 0 ? (
+        <div className="bg-white border border-gray-200 rounded-lg p-12 shadow-sm text-center">
+          <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            No Reports Generated
+          </h3>
+          <p className="text-sm text-gray-600 mb-6">
+            Click the &quot;Generate Report&quot; button to create your first
+            report
+          </p>
+          <Button
+            className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
+            onClick={() => setIsGenerateReportOpen(true)}
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-start space-x-3">
-                <div className="w-12 h-12 rounded-lg bg-[#ab792e]/10 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-6 h-6 text-[#ab792e]" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    {report.title}
-                  </h3>
-                  <p className="text-sm text-gray-600">{report.description}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center text-sm text-gray-600 space-x-4 mb-4">
-              <div className="flex items-center">
-                <Calendar className="w-4 h-4 mr-1" />
-                {report.date}
-              </div>
-              <div className="flex items-center">
-                <span className="px-2 py-0.5 bg-gray-100 rounded text-xs font-medium">
-                  {report.format}
-                </span>
-              </div>
-              <div>{report.size}</div>
-            </div>
-
-            <Button
-              variant="outline"
-              className="w-full hover:bg-[#ab792e] hover:text-white hover:border-[#ab792e]"
+            <FileText className="w-4 h-4 mr-2" />
+            Generate Your First Report
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {reports.map((report) => (
+            <div
+              key={report._id}
+              className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
             >
-              <Download className="w-4 h-4 mr-2" />
-              Download Report
-            </Button>
-          </div>
-        ))}
-      </div>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-12 h-12 rounded-lg bg-[#ab792e]/10 flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-6 h-6 text-[#ab792e]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1 truncate">
+                      {report.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {report.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center flex-wrap text-sm text-gray-600 gap-3 mb-4">
+                <div className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  {formatDate(report.createdAt)}
+                </div>
+                <div className="flex items-center">
+                  <span
+                    className={`px-2 py-0.5 rounded text-xs font-medium uppercase ${getFormatBadgeColor(
+                      report.format
+                    )}`}
+                  >
+                    {report.format}
+                  </span>
+                </div>
+                {report.fileSize && <div>{report.fileSize}</div>}
+              </div>
+
+              <div className="text-xs text-gray-500 mb-4">
+                Period: {report.period}
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 hover:bg-[#ab792e] hover:text-white hover:border-[#ab792e]"
+                  onClick={() => handleDownloadReport(report._id)}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
+                </Button>
+                <Button
+                  variant="outline"
+                  className="hover:bg-red-500 hover:text-white hover:border-red-500"
+                  onClick={() => handleDeleteReport(report._id)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Generate Report Modal */}
       <Dialog
@@ -269,14 +413,23 @@ export default function ReportsPage() {
             <Button
               variant="outline"
               onClick={() => setIsGenerateReportOpen(false)}
+              disabled={isGenerating}
             >
               Cancel
             </Button>
             <Button
               className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
               onClick={handleGenerateReport}
+              disabled={isGenerating}
             >
-              Generate Report
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "Generate Report"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

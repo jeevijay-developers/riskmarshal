@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -43,7 +43,9 @@ import {
   Calendar,
   DollarSign,
 } from "lucide-react";
-import { masterApi } from "@/lib/api";
+import * as subagentService from "@/server/subagents";
+import * as policyService from "@/server/policies";
+import { Loader2 } from "lucide-react";
 
 const categoryOrder: Record<string, number> = {
   Motor: 0,
@@ -53,6 +55,7 @@ const categoryOrder: Record<string, number> = {
 };
 
 interface Agent {
+  _id?: string;
   id: string;
   name: string;
   email: string;
@@ -73,6 +76,8 @@ export default function SubAgentManagement() {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [policyTypes, setPolicyTypes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [agents, setAgents] = useState<Agent[]>([
     {
@@ -143,11 +148,49 @@ export default function SubAgentManagement() {
     specializationId: "",
   });
 
-  useEffect(() => {
-    masterApi.getPolicyTypes().then((res) => {
-      setPolicyTypes(res.data || []);
-    });
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Fetch policy types
+      const policyTypesRes = await policyService.getPolicyTypes();
+      setPolicyTypes(policyTypesRes.data || []);
+
+      // Fetch subagents from backend
+      const subagentsRes = await subagentService.getSubagents();
+      const backendAgents = (subagentsRes.data || []).map((sa: any) => ({
+        _id: sa._id,
+        id: sa._id,
+        name: sa.name,
+        email: sa.email,
+        phone: sa.phone,
+        location: sa.location || "",
+        status: sa.status || "Active",
+        policies: sa.totalPolicies || 0,
+        commission: sa.totalCommission
+          ? `₹${sa.totalCommission.toLocaleString("en-IN")}`
+          : "₹0",
+        joinDate: sa.joinDate
+          ? new Date(sa.joinDate).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })
+          : undefined,
+        address: sa.address,
+        specialization: sa.specialization,
+        specializationId: sa.specializationId,
+      }));
+      setAgents(backendAgents);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const groupedPolicyTypes = useMemo(() => {
     const grouped: Record<string, any[]> = {};
@@ -166,7 +209,7 @@ export default function SubAgentManagement() {
         category,
         items: items.sort((a, b) => (a.name || "").localeCompare(b.name || "")),
       }));
-  }, [categoryOrder, policyTypes]);
+  }, [policyTypes]);
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -193,27 +236,42 @@ export default function SubAgentManagement() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSaveAgent = () => {
+  const handleSaveAgent = async () => {
     if (!validateForm()) {
       return;
     }
 
-    const newId = `SA-${String(agents.length + 1).padStart(3, "0")}`;
-    const selectedPolicyType = policyTypes.find(
-      (pt) => pt._id === newAgent.specializationId
-    );
+    setSaving(true);
+    try {
+      const selectedPolicyType = policyTypes.find(
+        (pt) => pt._id === newAgent.specializationId
+      );
 
-    const agentToAdd: Agent = {
-      ...newAgent,
-      specialization: selectedPolicyType?.name || newAgent.specialization,
-      id: newId,
-      policies: 0,
-      commission: "₹0",
-    };
+      const createData = {
+        name: newAgent.name,
+        email: newAgent.email,
+        phone: newAgent.phone,
+        location: newAgent.location,
+        address: newAgent.address,
+        specialization: selectedPolicyType?.name || newAgent.specialization,
+        specializationId: newAgent.specializationId,
+        status: newAgent.status,
+        joinDate: newAgent.joinDate || undefined,
+      };
 
-    setAgents([...agents, agentToAdd]);
-    setIsAddModalOpen(false);
-    resetForm();
+      await subagentService.createSubagent(createData);
+      setIsAddModalOpen(false);
+      resetForm();
+      fetchData(); // Refresh the list
+    } catch (error: any) {
+      console.error("Failed to create subagent:", error);
+      setFormErrors({
+        ...formErrors,
+        submit: error.message || "Failed to create agent",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const resetForm = () => {
@@ -235,6 +293,14 @@ export default function SubAgentManagement() {
     setSelectedAgent(agent);
     setIsViewModalOpen(true);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-[#ab792e]" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -568,14 +634,23 @@ export default function SubAgentManagement() {
                 setIsAddModalOpen(false);
                 resetForm();
               }}
+              disabled={saving}
             >
               Cancel
             </Button>
             <Button
               onClick={handleSaveAgent}
               className="bg-[#ab792e] hover:bg-[#8d6325]"
+              disabled={saving}
             >
-              Save Agent
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Agent"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
