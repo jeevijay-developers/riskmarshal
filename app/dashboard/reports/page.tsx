@@ -126,21 +126,33 @@ export default function ReportsPage() {
     }
   };
 
-  const handleDownloadReport = async (reportId: string) => {
+  const handleDownloadReport = async (report: Report) => {
     try {
-      const response = await downloadReport(reportId);
+      const response = await downloadReport(report._id, report.format);
       if (response.success) {
-        // Create a blob and download
-        const dataStr = JSON.stringify(response.data, null, 2);
-        const blob = new Blob([dataStr], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = response.filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        // Handle PDF blob download
+        if (response.blob) {
+          const url = URL.createObjectURL(response.blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = response.filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        } else if (response.data) {
+          // Handle JSON data downloads
+          const dataStr = JSON.stringify(response.data, null, 2);
+          const blob = new Blob([dataStr], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = response.filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
 
         toast({
           title: "Success",

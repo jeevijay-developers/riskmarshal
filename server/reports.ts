@@ -1,6 +1,6 @@
 // Report API Services
 
-import { request } from "./config";
+import { request, API_BASE_URL } from "./config";
 
 // ============ TYPES ============
 
@@ -60,16 +60,53 @@ export async function generateReport(
   );
 }
 
-// GET /reports/:id/download - Download report
+// GET /reports/:id/download - Download report (handles PDF as blob)
 export async function downloadReport(
-  reportId: string
-): Promise<{ success: boolean; data: any; format: string; filename: string }> {
-  return request<{
-    success: boolean;
-    data: any;
-    format: string;
-    filename: string;
-  }>(`/reports/${reportId}/download`);
+  reportId: string,
+  format: string = "pdf"
+): Promise<{ success: boolean; blob?: Blob; data?: any; filename: string }> {
+  const url = `${API_BASE_URL}/reports/${reportId}/download`;
+  const headers: HeadersInit = {};
+
+  // Add auth token if available (client-side only)
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+
+  const res = await fetch(url, { headers });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to download report");
+  }
+
+  const contentType = res.headers.get("Content-Type") || "";
+
+  // If it's a PDF, return as blob
+  if (contentType.includes("application/pdf") || format === "pdf") {
+    const blob = await res.blob();
+    const contentDisposition = res.headers.get("Content-Disposition") || "";
+    let filename = `report_${reportId}.pdf`;
+
+    // Extract filename from Content-Disposition header
+    const match = contentDisposition.match(/filename="?([^";\n]+)"?/);
+    if (match) {
+      filename = match[1];
+    }
+
+    return { success: true, blob, filename };
+  }
+
+  // For other formats, return JSON data
+  const data = await res.json();
+  return {
+    success: true,
+    data: data.data,
+    filename: data.filename || `report_${reportId}.json`,
+  };
 }
 
 // DELETE /reports/:id - Delete a report
@@ -83,3 +120,4 @@ export async function deleteReport(
     }
   );
 }
+

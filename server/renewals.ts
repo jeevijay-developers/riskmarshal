@@ -259,3 +259,91 @@ Please contact us to process the renewal and ensure uninterrupted coverage.
 Best regards,
 Risk Marshal Team`;
 }
+
+// ============ SCHEDULER TYPES ============
+
+export interface SchedulerStatus {
+  enabled: boolean;
+  running: boolean;
+  cronExpression: string;
+  runTime: string;
+  lastRun: string | null;
+  nextRun: string | null;
+  totalRuns: number;
+  successfulRuns: number;
+  failedRuns: number;
+  lastRunStats: {
+    policiesChecked: number;
+    remindersSent: number;
+    errors: number;
+  } | null;
+}
+
+export interface SchedulerConfig {
+  enabled?: boolean;
+  runHour?: number;
+  runMinute?: number;
+}
+
+export interface RenewalCheckResult {
+  runTime: string;
+  policiesChecked: number;
+  remindersSent: number;
+  errors: number;
+  reminders: {
+    policyId: string;
+    policyNumber: string;
+    client: string;
+    reminderType: string;
+    daysUntilExpiry: number;
+    success: boolean;
+    error?: string;
+  }[];
+}
+
+// ============ SCHEDULER API FUNCTIONS ============
+
+/**
+ * Get scheduler status
+ */
+export async function getSchedulerStatus(): Promise<{
+  success: boolean;
+  data: SchedulerStatus;
+}> {
+  return request<{ success: boolean; data: SchedulerStatus }>(
+    "/renewals/scheduler/status"
+  );
+}
+
+/**
+ * Manually trigger renewal check
+ */
+export async function triggerRenewalCheck(): Promise<{
+  success: boolean;
+  message: string;
+  data: RenewalCheckResult;
+}> {
+  return request<{
+    success: boolean;
+    message: string;
+    data: RenewalCheckResult;
+  }>("/renewals/scheduler/trigger", {
+    method: "POST",
+  });
+}
+
+/**
+ * Configure scheduler settings
+ */
+export async function configureScheduler(
+  config: SchedulerConfig
+): Promise<{ success: boolean; message: string; data: SchedulerConfig }> {
+  return request<{ success: boolean; message: string; data: SchedulerConfig }>(
+    "/renewals/scheduler/configure",
+    {
+      method: "POST",
+      body: JSON.stringify(config),
+    }
+  );
+}
+
