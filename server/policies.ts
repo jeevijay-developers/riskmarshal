@@ -322,6 +322,18 @@ export async function generatePolicy(
   );
 }
 
+// ============ WHATSAPP NOTIFICATION ============
+
+// POST /policies/:id/send-whatsapp - Send policy creation WhatsApp message
+export async function sendPolicyWhatsApp(
+  policyId: string
+): Promise<{ success: boolean; message: string; data?: any }> {
+  return request<{ success: boolean; message: string; data?: any }>(
+    `/policies/${policyId}/send-whatsapp`,
+    { method: "POST" }
+  );
+}
+
 // ============ PAYMENT ROUTES (Policy-specific) ============
 
 // POST /policies/:id/create-payment - Create payment for policy

@@ -84,19 +84,25 @@ export async function downloadReport(
   }
 
   const contentType = res.headers.get("Content-Type") || "";
+  const contentDisposition = res.headers.get("Content-Disposition") || "";
 
-  // If it's a PDF, return as blob
-  if (contentType.includes("application/pdf") || format === "pdf") {
+  // Extract filename from Content-Disposition header
+  let filename = `report_${reportId}.${format}`;
+  const match = contentDisposition.match(/filename="?([^";\n]+)"?/);
+  if (match) {
+    filename = match[1];
+  }
+
+  // Handle all binary file formats (PDF, XLSX, CSV) as blobs
+  if (
+    contentType.includes("application/pdf") ||
+    contentType.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
+    contentType.includes("text/csv") ||
+    format === "pdf" ||
+    format === "xlsx" ||
+    format === "csv"
+  ) {
     const blob = await res.blob();
-    const contentDisposition = res.headers.get("Content-Disposition") || "";
-    let filename = `report_${reportId}.pdf`;
-
-    // Extract filename from Content-Disposition header
-    const match = contentDisposition.match(/filename="?([^";\n]+)"?/);
-    if (match) {
-      filename = match[1];
-    }
-
     return { success: true, blob, filename };
   }
 

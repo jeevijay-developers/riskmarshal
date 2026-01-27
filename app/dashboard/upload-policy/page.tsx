@@ -12,6 +12,7 @@ import {
   X,
   Edit3,
   Save,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,9 +38,11 @@ import {
   updatePolicy,
   getInsurers,
   getPolicyTypes,
+  sendPolicyWhatsApp,
 } from "@/server/policies";
 import { getSubagents } from "@/server/subagents";
 import { getClients, searchClients } from "@/server/clients";
+import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 
 interface ExtractedData {
@@ -103,11 +106,13 @@ interface ExtractedData {
 
 export default function UploadPolicyPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [step, setStep] = useState<"upload" | "review" | "complete">("upload");
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
 
   const [policyId, setPolicyId] = useState<string | null>(null);
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(
@@ -812,9 +817,9 @@ export default function UploadPolicyPage() {
             </h3>
             <p className="text-gray-600 mb-6">
               The policy has been saved as a draft. You can now generate a
-              quotation.
+              quotation or notify the client via WhatsApp.
             </p>
-            <div className="flex justify-center space-x-4">
+            <div className="flex justify-center flex-wrap gap-3">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -828,6 +833,44 @@ export default function UploadPolicyPage() {
                 }}
               >
                 Upload Another
+              </Button>
+              <Button
+                variant="outline"
+                className="border-green-500 text-green-600 hover:bg-green-50"
+                disabled={sendingWhatsApp || !policyId}
+                onClick={async () => {
+                  if (!policyId) return;
+                  setSendingWhatsApp(true);
+                  try {
+                    const res = await sendPolicyWhatsApp(policyId);
+                    if (res.success) {
+                      toast({
+                        title: "Success",
+                        description: "WhatsApp message sent to client",
+                      });
+                    }
+                  } catch (err: any) {
+                    toast({
+                      title: "Error",
+                      description: err.message || "Failed to send WhatsApp message",
+                      variant: "destructive",
+                    });
+                  } finally {
+                    setSendingWhatsApp(false);
+                  }
+                }}
+              >
+                {sendingWhatsApp ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Send WhatsApp
+                  </>
+                )}
               </Button>
               <Button
                 className="bg-[#ab792e] hover:bg-[#8d6325] text-white"
