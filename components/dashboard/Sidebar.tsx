@@ -45,6 +45,7 @@ const navItems = [
     href: "/dashboard/active-policies",
     icon: CheckCircle,
   },
+  { name: "Renewals", href: "/dashboard/renewals", icon: RefreshCw },
   { name: "Subagents", href: "/dashboard/subagent", icon: UserCog },
   { name: "Reports", href: "/dashboard/reports", icon: FileText },
   { name: "Insurers", href: "/dashboard/insurance", icon: Building },

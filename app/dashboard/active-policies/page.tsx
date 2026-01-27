@@ -120,38 +120,67 @@ export default function ActivePolicies() {
         ]);
 
       if (policiesRes.success && policiesRes.policies) {
-        const mappedPolicies = policiesRes.policies.map((p: any) => ({
-          _id: p._id,
-          policyId: p.policyDetails?.policyNumber || p._id,
-          client: p.client?.name || "Unknown",
-          clientId: p.client?._id,
-          email: p.client?.email || "",
-          phone: p.client?.contactNumber || "",
-          policyType: p.policyType?.name || p.policyType || "Unknown",
-          policyTypeId: p.policyType?._id,
-          premium: String(p.premiumDetails?.finalPremium || p.premium || 0),
-          coverage: String(p.sumInsured || p.coverage || 0),
-          startDate: normalizeDateInput(
+        const mappedPolicies = policiesRes.policies.map((p: any) => {
+          // Extract corrected fields from OCR data
+          const correctedFields = p.ocrExtractedData?.correctedFields || {};
+          const extractedPolicy = correctedFields.policy || {};
+          const extractedCustomer = correctedFields.customer || {};
+
+          // Get policy period - prioritize policyDetails, then correctedFields
+          const startDate = normalizeDateInput(
             p.policyDetails?.insuranceStartDate ||
               p.policyDetails?.periodFrom ||
+              extractedPolicy.periodFrom ||
               p.startDate ||
               ""
-          ),
-          endDate: normalizeDateInput(
+          );
+          const endDate = normalizeDateInput(
             p.policyDetails?.insuranceEndDate ||
               p.policyDetails?.periodTo ||
+              extractedPolicy.periodTo ||
               p.endDate ||
               ""
-          ),
-          agent: p.subagent?.name || "Direct",
-          createdAt: normalizeDateInput(p.createdAt),
-          status: (p.status || "draft").toLowerCase(),
-          paymentStatus: p.paymentStatus || "pending",
-          address: p.client?.address || "",
-          notes: p.notes || "",
-          insurer: p.insurer?.companyName || "",
-          insurerId: p.insurer?._id,
-        }));
+          );
+
+          // Get client info - prioritize populated client, then correctedFields
+          const clientName =
+            p.client?.name || extractedCustomer.name || "Unknown";
+          const clientEmail = p.client?.email || extractedCustomer.email || "";
+          const clientPhone =
+            p.client?.contactNumber || extractedCustomer.phone || "";
+          const clientAddress =
+            p.client?.address || extractedCustomer.address || "";
+
+          // Get policy number
+          const policyNumber =
+            p.policyDetails?.policyNumber ||
+            correctedFields.policyNumber ||
+            p._id;
+
+          return {
+            _id: p._id,
+            policyId: policyNumber,
+            client: clientName,
+            clientId: p.client?._id,
+            email: clientEmail,
+            phone: clientPhone,
+            policyType: p.policyType?.name || p.policyType || "Unknown",
+            policyTypeId: p.policyType?._id,
+            premium: String(p.premiumDetails?.finalPremium || p.premium || 0),
+            coverage: String(p.sumInsured || p.coverage || 0),
+            startDate,
+            endDate,
+            agent: p.subagent?.name || "Direct",
+            createdAt: normalizeDateInput(p.createdAt),
+            status: (p.status || "draft").toLowerCase(),
+            paymentStatus: p.paymentStatus || "pending",
+            address: clientAddress,
+            notes: p.notes || "",
+            insurer:
+              p.insurer?.companyName || correctedFields.insurerName || "",
+            insurerId: p.insurer?._id,
+          };
+        });
         setPolicies(mappedPolicies);
       }
 

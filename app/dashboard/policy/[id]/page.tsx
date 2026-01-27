@@ -188,7 +188,7 @@ export default function PolicyDetailPage() {
 
       {/* Action Buttons */}
       <div className="flex space-x-3">
-        {policy.status === "draft" && (
+        {/* {policy.status === "draft" && (
           <Button
             onClick={handleGenerateQuotation}
             disabled={sending}
@@ -201,7 +201,7 @@ export default function PolicyDetailPage() {
             )}
             Generate Quotation
           </Button>
-        )}
+        )} */}
         {(policy.status === "draft" || policy.status === "quotation_sent") &&
           policy.quotationId && (
             <Button variant="outline" onClick={() => setSendModalOpen(true)}>

@@ -79,60 +79,7 @@ export default function SubAgentManagement() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [agents, setAgents] = useState<Agent[]>([
-    {
-      id: "SA-001",
-      name: "Ramesh Chandra",
-      email: "ramesh.chandra@email.com",
-      phone: "+91-98765-43210",
-      location: "Delhi",
-      status: "Active",
-      policies: 45,
-      commission: "₹1,60,000",
-      joinDate: "Jan 15, 2023",
-      address: "123, Connaught Place, New Delhi, Delhi",
-      specialization: "Motor & Home Insurance",
-    },
-    {
-      id: "SA-002",
-      name: "Sunita Sharma",
-      email: "sunita.sharma@email.com",
-      phone: "+91-87654-32109",
-      location: "Mumbai",
-      status: "Active",
-      policies: 38,
-      commission: "₹1,42,500",
-      joinDate: "Mar 10, 2023",
-      address: "456, Andheri West, Mumbai, Maharashtra",
-      specialization: "Life & Health Insurance",
-    },
-    {
-      id: "SA-003",
-      name: "Deepak Kumar",
-      email: "deepak.kumar@email.com",
-      phone: "+91-76543-21098",
-      location: "Bangalore",
-      status: "Inactive",
-      policies: 22,
-      commission: "₹77,000",
-      joinDate: "Aug 22, 2023",
-      address: "789, Koramangala, Bangalore, Karnataka",
-      specialization: "Business Insurance",
-    },
-    {
-      id: "SA-004",
-      name: "Pooja Singh",
-      email: "pooja.singh@email.com",
-      phone: "+91-65432-10987",
-      location: "Pune",
-      status: "Active",
-      policies: 52,
-      commission: "₹1,84,000",
-      joinDate: "May 05, 2022",
-      address: "321, Viman Nagar, Pune, Maharashtra",
-      specialization: "Comprehensive Insurance",
-    },
-  ]);
+  const [agents, setAgents] = useState<Agent[]>([]);
 
   const [newAgent, setNewAgent] = useState<
     Omit<Agent, "id" | "policies" | "commission">
@@ -210,6 +157,63 @@ export default function SubAgentManagement() {
         items: items.sort((a, b) => (a.name || "").localeCompare(b.name || "")),
       }));
   }, [policyTypes]);
+
+  // Calculate statistics dynamically from agents data
+  const stats = useMemo(() => {
+    if (agents.length === 0) {
+      return {
+        totalAgents: 0,
+        activeAgents: 0,
+        topPerformers: 0,
+        avgCommission: "₹0",
+        activePercentage: "0",
+      };
+    }
+
+    const totalAgents = agents.length;
+    const activeAgents = agents.filter((a) => a.status === "Active").length;
+    const activePercentage =
+      totalAgents > 0 ? Math.round((activeAgents / totalAgents) * 100) : 0;
+
+    // Calculate average policies per agent to determine top performers
+    const avgPolicies =
+      agents.reduce((sum, a) => sum + a.policies, 0) / totalAgents;
+    const topPerformers = agents.filter((a) => a.policies > avgPolicies).length;
+
+    // Parse commission values and calculate average
+    const commissionValues = agents
+      .map((a) => {
+        const value = a.commission.replace(/[₹,]/g, "");
+        return parseInt(value, 10) || 0;
+      })
+      .filter((val) => val > 0);
+
+    const avgCommission =
+      commissionValues.length > 0
+        ? Math.round(
+            commissionValues.reduce((sum, val) => sum + val, 0) /
+              commissionValues.length
+          )
+        : 0;
+
+    // Format to Indian numbering system (Lakhs, Crores)
+    let formattedCommission = "₹0";
+    if (avgCommission >= 10000000) {
+      formattedCommission = `₹${(avgCommission / 10000000).toFixed(2)}Cr`;
+    } else if (avgCommission >= 100000) {
+      formattedCommission = `₹${(avgCommission / 100000).toFixed(2)}L`;
+    } else {
+      formattedCommission = `₹${avgCommission.toLocaleString("en-IN")}`;
+    }
+
+    return {
+      totalAgents,
+      activeAgents,
+      topPerformers,
+      avgCommission: formattedCommission,
+      activePercentage: activePercentage.toString(),
+    };
+  }, [agents]);
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -342,8 +346,12 @@ export default function SubAgentManagement() {
             <UserCog className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{agents.length}</div>
-            <p className="text-xs text-muted-foreground">+8% from last month</p>
+            <div className="text-2xl font-bold">{stats.totalAgents}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.totalAgents === 0
+                ? "No agents added yet"
+                : "+8% from last month"}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -352,10 +360,10 @@ export default function SubAgentManagement() {
             <UserCog className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {agents.filter((a) => a.status === "Active").length}
-            </div>
-            <p className="text-xs text-muted-foreground">91% of total</p>
+            <div className="text-2xl font-bold">{stats.activeAgents}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.activePercentage}% of total
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -366,8 +374,10 @@ export default function SubAgentManagement() {
             <UserCog className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">23</div>
-            <p className="text-xs text-muted-foreground">Above target</p>
+            <div className="text-2xl font-bold">{stats.topPerformers}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.topPerformers === 0 ? "Above average" : "Above average"}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -378,8 +388,10 @@ export default function SubAgentManagement() {
             <UserCog className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹1.42L</div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <div className="text-2xl font-bold">{stats.avgCommission}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.totalAgents === 0 ? "No data" : "Current average"}
+            </p>
           </CardContent>
         </Card>
       </div>

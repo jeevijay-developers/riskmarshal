@@ -53,12 +53,14 @@ interface Client {
 
 export default function ClientsPage() {
   const [isAddClientOpen, setIsAddClientOpen] = useState(false);
+  const [isViewClientOpen, setIsViewClientOpen] = useState(false);
   const [isEditClientOpen, setIsEditClientOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [viewClient, setViewClient] = useState<Client | null>(null);
   const [newClient, setNewClient] = useState({
     name: "",
     contactNumber: "",
@@ -140,8 +142,10 @@ export default function ClientsPage() {
 
   const handleViewDetails = (clientId: string) => {
     const client = clients.find((c) => c._id === clientId);
-    console.log("View details for client:", client);
-    // Implement view details logic - could open a modal with full details
+    if (client) {
+      setViewClient(client);
+      setIsViewClientOpen(true);
+    }
   };
 
   const handleEditClient = (clientId: string) => {
@@ -300,9 +304,9 @@ export default function ClientsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                   Policies
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                   WhatsApp
-                </th>
+                </th> */}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                   Actions
                 </th>
@@ -347,7 +351,7 @@ export default function ClientsPage() {
                       {client.policies?.length || 0}
                     </p>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  {/* <td className="px-6 py-4 whitespace-nowrap">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className="inline-flex items-center justify-center p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors">
@@ -369,7 +373,7 @@ export default function ClientsPage() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </td>
+                  </td> */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -615,6 +619,92 @@ export default function ClientsPage() {
             >
               {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Update Client
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Client Modal */}
+      <Dialog
+        open={isViewClientOpen}
+        onOpenChange={(open) => {
+          setIsViewClientOpen(open);
+          if (!open) setViewClient(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Client Details</DialogTitle>
+            <DialogDescription>
+              Review the customer information.
+            </DialogDescription>
+          </DialogHeader>
+          {viewClient ? (
+            <div className="grid gap-3 py-2 text-sm text-gray-800">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Name</span>
+                <span className="font-medium">{viewClient.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Contact</span>
+                <span className="font-medium">
+                  {viewClient.contactNumber || "—"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Email</span>
+                <span className="font-medium">{viewClient.email || "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Address</span>
+                <span className="font-medium text-right">
+                  {viewClient.address || "—"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">GSTIN</span>
+                <span className="font-medium">{viewClient.gstIn || "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Customer ID</span>
+                <span className="font-medium">{viewClient.customerId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Policies</span>
+                <span className="font-medium">
+                  {viewClient.policies?.length || 0}
+                </span>
+              </div>
+              {viewClient.createdAt && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Created</span>
+                  <span className="font-medium">
+                    {new Date(viewClient.createdAt).toLocaleDateString(
+                      "en-IN",
+                      {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      }
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-6 text-center text-gray-500">
+              No client selected.
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsViewClientOpen(false);
+                setViewClient(null);
+              }}
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

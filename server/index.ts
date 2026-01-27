@@ -172,3 +172,36 @@ export const clientApi = {
   update: clientService.updateClient,
   delete: clientService.deleteClient,
 };
+
+// Renewal Services
+export {
+  getAllRenewals,
+  getRenewals,
+  getRenewalById,
+  updateRenewal,
+  sendRenewalReminder,
+  sendBulkReminders,
+  getRenewalStats,
+  getPoliciesDueForRenewal,
+  getOverduePolicies,
+  generateDefaultRenewalMessage,
+  type Renewal,
+  type RenewalStats,
+  type AllRenewalsResponse,
+  type SendReminderRequest,
+  type BulkReminderRequest,
+  type BulkReminderResponse,
+} from "./renewals";
+
+import * as renewalService from "./renewals";
+
+export const renewalApi = {
+  getAll: renewalService.getAllRenewals,
+  getById: renewalService.getRenewalById,
+  update: renewalService.updateRenewal,
+  sendReminder: renewalService.sendRenewalReminder,
+  sendBulkReminders: renewalService.sendBulkReminders,
+  getStats: renewalService.getRenewalStats,
+  getDue: renewalService.getPoliciesDueForRenewal,
+  getOverdue: renewalService.getOverduePolicies,
+};
