@@ -5,12 +5,13 @@ import { Bell } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 
 export default function DashboardHeader() {
-  const { userProfile } = useUser();
+  const { user } = useUser();
 
-  const initials = `${userProfile.firstName.charAt(
-    0
-  )}${userProfile.lastName.charAt(0)}`;
-  const fullName = `${userProfile.firstName} ${userProfile.lastName}`;
+  const firstName = user?.firstName || "Welcome";
+  const lastName = user?.lastName || "";
+  const role = user?.role || "";
+  const initials = `${firstName ? firstName.charAt(0) : "W"}${lastName ? lastName.charAt(0) : "!"}`;
+  const fullName = `${firstName} ${lastName}`.trim();
 
   return (
     <header className="bg-white border-b border-gray-200 px-8 py-4">
@@ -33,10 +34,10 @@ export default function DashboardHeader() {
           <div className="flex items-center space-x-3">
             <div className="text-right">
               <p className="text-sm font-medium text-gray-900">{fullName}</p>
-              <p className="text-xs text-gray-600">{userProfile.role}</p>
+              <p className="text-xs text-gray-600 capitalize">{role}</p>
             </div>
             <Avatar className="h-10 w-10 border-2 border-[#ab792e]">
-              <AvatarFallback className="bg-[#ab792e] text-white">
+              <AvatarFallback className="bg-[#ab792e] text-white font-medium">
                 {initials}
               </AvatarFallback>
             </Avatar>
