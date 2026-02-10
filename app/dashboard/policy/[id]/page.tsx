@@ -32,11 +32,13 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 import { policyApi } from "@/lib/api";
 
 export default function PolicyDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   const policyId = params.id as string;
 
   const [policy, setPolicy] = useState<any>(null);
@@ -72,9 +74,18 @@ export default function PolicyDetailPage() {
     setSending(true);
     try {
       await policyApi.generateQuotation(policyId);
+      toast({
+        title: "Quotation Generated",
+        description: "The quotation PDF has been generated successfully.",
+      });
       fetchPolicy();
     } catch (err: any) {
       setError(err.message);
+      toast({
+        title: "Generation Failed",
+        description: err.message,
+        variant: "destructive",
+      });
     } finally {
       setSending(false);
     }
@@ -92,9 +103,18 @@ export default function PolicyDetailPage() {
         paymentLink || undefined
       );
       setSendModalOpen(false);
+      toast({
+        title: "Quotation Sent",
+        description: `The quotation has been sent via ${channels.join(" and ")}.`,
+      });
       fetchPolicy();
     } catch (err: any) {
       setError(err.message);
+      toast({
+        title: "Failed to Send",
+        description: err.message,
+        variant: "destructive",
+      });
     } finally {
       setSending(false);
     }
@@ -105,9 +125,18 @@ export default function PolicyDetailPage() {
     try {
       await policyApi.approvePayment(policyId);
       setApproveModalOpen(false);
+      toast({
+        title: "Payment Approved",
+        description: "The payment has been approved and final policy generated.",
+      });
       fetchPolicy();
     } catch (err: any) {
       setError(err.message);
+      toast({
+        title: "Approval Failed",
+        description: err.message,
+        variant: "destructive",
+      });
     } finally {
       setApproving(false);
     }
@@ -188,7 +217,7 @@ export default function PolicyDetailPage() {
 
       {/* Action Buttons */}
       <div className="flex space-x-3">
-        {/* {policy.status === "draft" && (
+        {policy.status === "draft" && !policy.quotationPdfUrl && (
           <Button
             onClick={handleGenerateQuotation}
             disabled={sending}
@@ -201,13 +230,12 @@ export default function PolicyDetailPage() {
             )}
             Generate Quotation
           </Button>
-        )} */}
-        {(policy.status === "draft" || policy.status === "quotation_sent") &&
-          policy.quotationId && (
-            <Button variant="outline" onClick={() => setSendModalOpen(true)}>
-              <Send className="w-4 h-4 mr-2" /> Send Quotation
-            </Button>
-          )}
+        )}
+        {policy.quotationPdfUrl && (
+          <Button variant="outline" onClick={() => setSendModalOpen(true)}>
+            <Send className="w-4 h-4 mr-2" /> Send Quotation
+          </Button>
+        )}
         {policy.status === "payment_pending" && (
           <Button
             className="bg-green-600 hover:bg-green-700 text-white"
@@ -216,7 +244,7 @@ export default function PolicyDetailPage() {
             <CheckCircle className="w-4 h-4 mr-2" /> Approve Payment
           </Button>
         )}
-        {/* {policy.quotationPdfUrl && (
+        {policy.quotationPdfUrl && (
           <Button variant="outline" asChild>
             <a
               href={policy.quotationPdfUrl}
@@ -226,7 +254,7 @@ export default function PolicyDetailPage() {
               <Download className="w-4 h-4 mr-2" /> Quotation PDF
             </a>
           </Button>
-        )} */}
+        )}
         {policy.policyPdfUrl && (
           <Button variant="outline" asChild>
             <a
