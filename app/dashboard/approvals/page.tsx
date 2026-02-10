@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -62,6 +63,7 @@ interface Policy {
 
 export default function ApprovalsPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,22 +84,37 @@ export default function ApprovalsPage() {
       const res = await getAllPolicies({
         paymentStatus: "pending",
       });
-      // Map to local Policy interface
-      const mappedPolicies = (res.policies || []).map((p: any) => ({
-        _id: p._id,
-        quotationId: p.quotationPdfUrl ? p._id : undefined,
-        policyDetails: p.policyDetails,
-        client: typeof p.client === "string" ? { name: p.client } : p.client,
-        insurer:
-          typeof p.insurer === "string"
-            ? { companyName: p.insurer }
-            : p.insurer,
-        premiumDetails: p.premiumDetails,
-        status: p.status,
-        paymentLink: p.paymentLink,
-        createdAt: p.createdAt,
-        paymentStatus: p.paymentStatus,
-      }));
+      // Map to local Policy interface, deduplicate by _id, and filter out incomplete policies
+      const seen = new Set<string>();
+      const mappedPolicies = (res.policies || [])
+        .filter((p: any) => {
+          // Skip duplicates
+          if (seen.has(p._id)) return false;
+          seen.add(p._id);
+          // Only show policies that have:
+          // 1. A quotation PDF (quotationPdfUrl) OR status is payment_pending/quotation_sent
+          // 2. Client data populated
+          // 3. Premium data
+          const hasQuotation = p.quotationPdfUrl || p.status === "payment_pending" || p.status === "quotation_sent";
+          const hasClient = p.client && (typeof p.client === "object" ? p.client.name : p.client);
+          const hasPremium = p.premiumDetails?.finalPremium > 0;
+          return hasQuotation || (hasClient && hasPremium);
+        })
+        .map((p: any) => ({
+          _id: p._id,
+          quotationId: p.quotationPdfUrl ? p._id : undefined,
+          policyDetails: p.policyDetails,
+          client: typeof p.client === "string" ? { name: p.client } : p.client,
+          insurer:
+            typeof p.insurer === "string"
+              ? { companyName: p.insurer }
+              : p.insurer,
+          premiumDetails: p.premiumDetails,
+          status: p.status,
+          paymentLink: p.paymentLink,
+          createdAt: p.createdAt,
+          paymentStatus: p.paymentStatus,
+        }));
       setPolicies(mappedPolicies);
     } catch (err: any) {
       setError(err.message);
@@ -130,9 +147,18 @@ export default function ApprovalsPage() {
       );
       setSendModalOpen(false);
       setPaymentLink("");
+      toast({
+        title: "Quotation Sent",
+        description: "The quotation has been sent successfully.",
+      });
       fetchPolicies();
     } catch (err: any) {
       setError(err.message);
+      toast({
+        title: "Failed to Send",
+        description: err.message,
+        variant: "destructive",
+      });
     } finally {
       setSending(false);
     }
@@ -144,9 +170,18 @@ export default function ApprovalsPage() {
     try {
       await approvePayment(selectedPolicy._id);
       setApproveModalOpen(false);
+      toast({
+        title: "Payment Approved",
+        description: "The payment has been approved and policy generated.",
+      });
       fetchPolicies();
     } catch (err: any) {
       setError(err.message);
+      toast({
+        title: "Approval Failed",
+        description: err.message,
+        variant: "destructive",
+      });
     } finally {
       setApproving(false);
     }

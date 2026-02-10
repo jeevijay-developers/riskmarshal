@@ -125,7 +125,15 @@ export default function ActivePolicies() {
         ]);
 
       if (policiesRes.success && policiesRes.policies) {
-        const mappedPolicies = policiesRes.policies.map((p: any) => {
+        // Deduplicate policies by _id before mapping
+        const seen = new Set<string>();
+        const uniquePolicies = policiesRes.policies.filter((p: any) => {
+          if (seen.has(p._id)) return false;
+          seen.add(p._id);
+          return true;
+        });
+
+        const mappedPolicies = uniquePolicies.map((p: any) => {
           // Extract corrected fields from OCR data
           const correctedFields = p.ocrExtractedData?.correctedFields || {};
           const extractedPolicy = correctedFields.policy || {};
@@ -407,6 +415,7 @@ export default function ActivePolicies() {
     })
     .slice(0, 5)
     .map((p) => ({
+      _id: p._id,
       policy: p.policyId,
       client: p.client,
       type: p.policyType,
@@ -588,7 +597,7 @@ export default function ActivePolicies() {
               ) : (
                 recentActivities.map((activity) => (
                   <div
-                    key={activity.policy}
+                    key={activity._id}
                     className="flex items-center justify-between"
                   >
                     <div>
@@ -627,7 +636,7 @@ export default function ActivePolicies() {
             ) : (
               pagedPolicies.map((policy) => (
                 <div
-                  key={policy._id || policy.policyId}
+                  key={policy._id}
                   className="border rounded-lg p-4 space-y-3"
                 >
                   <div className="flex items-center justify-between">
