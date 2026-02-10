@@ -89,6 +89,8 @@ export default function ActivePolicies() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Policy | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -306,12 +308,9 @@ export default function ActivePolicies() {
     setShowViewModal(true);
   };
 
-  const handleDeletePolicy = async (policyId?: string) => {
+  const handleConfirmDelete = async () => {
+    const policyId = deleteTarget?._id;
     if (!policyId) return;
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this policy? This action cannot be undone."
-    );
-    if (!confirmed) return;
 
     try {
       setDeletingId(policyId);
@@ -323,6 +322,8 @@ export default function ActivePolicies() {
       console.error("Error deleting policy:", error);
     } finally {
       setDeletingId(null);
+      setShowDeleteConfirm(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -712,7 +713,10 @@ export default function ActivePolicies() {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleDeletePolicy(policy._id)}
+                        onClick={() => {
+                          setDeleteTarget(policy);
+                          setShowDeleteConfirm(true);
+                        }}
                         disabled={deletingId === policy._id}
                       >
                         {deletingId === policy._id ? (
@@ -1194,6 +1198,48 @@ export default function ActivePolicies() {
                 Process Payment
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Policy</DialogTitle>
+            <DialogDescription>
+              This will permanently remove policy {deleteTarget?.policyId}. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 text-sm text-gray-700">
+            <p>Client: {deleteTarget?.client}</p>
+            <p>Policy Type: {deleteTarget?.policyType}</p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                setDeleteTarget(null);
+              }}
+              disabled={!!deletingId}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={!!deletingId}
+            >
+              {deletingId ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Yes, delete"
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
