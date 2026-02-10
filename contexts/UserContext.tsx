@@ -1,39 +1,94 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
-
-interface UserProfile {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  role: string;
-}
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from "react";
+import {
+  getMe,
+  updateProfile as updateProfileApi,
+  User,
+  NotificationPreferences,
+  OrganizationSettings,
+} from "@/server/auth";
 
 interface UserContextType {
-  userProfile: UserProfile;
-  updateUserProfile: (profile: Partial<UserProfile>) => void;
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+  refreshUser: () => Promise<void>;
+  updateUserProfile: (data: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+  }) => Promise<boolean>;
 }
-
-const defaultProfile: UserProfile = {
-  firstName: "Akhilesh",
-  lastName: "Jain",
-  email: "john.doe@riskmarshal.com",
-  phone: "+91 94250 11003",
-  role: "Super admin",
-};
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [userProfile, setUserProfile] = useState<UserProfile>(defaultProfile);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const updateUserProfile = (profile: Partial<UserProfile>) => {
-    setUserProfile((prev) => ({ ...prev, ...profile }));
-  };
+  const refreshUser = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getMe();
+      if (response.success) {
+        setUser(response.data);
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch user");
+      console.error("Failed to fetch user:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateUserProfile = useCallback(
+    async (data: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      phone?: string;
+    }): Promise<boolean> => {
+      try {
+        const response = await updateProfileApi(data);
+        if (response.success) {
+          setUser(response.data);
+          return true;
+        }
+        return false;
+      } catch (err: any) {
+        console.error("Failed to update profile:", err);
+        return false;
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    // Only fetch if we have a token
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (token) {
+      refreshUser();
+    } else {
+      setLoading(false);
+    }
+  }, [refreshUser]);
 
   return (
-    <UserContext.Provider value={{ userProfile, updateUserProfile }}>
+    <UserContext.Provider
+      value={{ user, loading, error, refreshUser, updateUserProfile }}
+    >
       {children}
     </UserContext.Provider>
   );
