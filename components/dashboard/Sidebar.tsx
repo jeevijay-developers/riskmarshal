@@ -23,6 +23,7 @@ import {
   Building,
   Upload,
   CreditCard,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +40,7 @@ const navItems = [
   { name: "Dashboard Overview", href: "/dashboard", icon: LayoutDashboard },
   { name: "Clients", href: "/dashboard/clients", icon: Users },
   { name: "Upload Policy", href: "/dashboard/upload-policy", icon: Upload },
+  { name: "Leads Management", href: "/dashboard/leads", icon: UserPlus },
   { name: "Payment Approvals", href: "/dashboard/approvals", icon: CreditCard },
   {
     name: "Active Policies",
