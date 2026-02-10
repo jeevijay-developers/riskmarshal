@@ -38,6 +38,7 @@ import {
   User,
   FileText,
   Eye,
+  Trash2,
   Loader2,
 } from "lucide-react";
 import {
@@ -45,6 +46,7 @@ import {
   createPolicy,
   getPolicyTypes,
   getInsurers,
+  deletePolicy,
   PolicyType,
   Insurer,
 } from "@/server/policies";
@@ -86,6 +88,7 @@ export default function ActivePolicies() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -301,6 +304,26 @@ export default function ActivePolicies() {
   const handleViewDetails = (policy: Policy) => {
     setSelectedPolicy(policy);
     setShowViewModal(true);
+  };
+
+  const handleDeletePolicy = async (policyId?: string) => {
+    if (!policyId) return;
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this policy? This action cannot be undone."
+    );
+    if (!confirmed) return;
+
+    try {
+      setDeletingId(policyId);
+      const response = await deletePolicy(policyId);
+      if (response.success) {
+        setPolicies((prev) => prev.filter((p) => p._id !== policyId));
+      }
+    } catch (error) {
+      console.error("Error deleting policy:", error);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const formatCurrency = (amount: string) => {
@@ -685,6 +708,24 @@ export default function ActivePolicies() {
                       >
                         <Eye className="w-3 h-3 mr-1" />
                         View Details
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeletePolicy(policy._id)}
+                        disabled={deletingId === policy._id}
+                      >
+                        {deletingId === policy._id ? (
+                          <>
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            Delete
+                          </>
+                        )}
                       </Button>
                       {policy.paymentStatus === "Pending" && (
                         <Button

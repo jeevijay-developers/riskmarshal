@@ -348,13 +348,7 @@ export default function RenewalList() {
             Track and manage policy renewals and expirations
           </p>
         </div>
-        <Button
-          className="bg-[#ab792e] hover:bg-[#8d6325]"
-          onClick={() => setIsAddModalOpen(true)}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Renewal
-        </Button>
+        
       </div>
 
       {error && (
