@@ -40,7 +40,6 @@ const navItems = [
   { name: "Dashboard Overview", href: "/dashboard", icon: LayoutDashboard },
   { name: "Clients", href: "/dashboard/clients", icon: Users },
   { name: "Upload Policy", href: "/dashboard/upload-policy", icon: Upload },
-  { name: "Leads Management", href: "/dashboard/leads", icon: UserPlus },
   { name: "Payment Approvals", href: "/dashboard/approvals", icon: CreditCard },
   {
     name: "Active Policies",
@@ -51,6 +50,7 @@ const navItems = [
   { name: "Subagents", href: "/dashboard/subagent", icon: UserCog },
   { name: "Reports", href: "/dashboard/reports", icon: FileText },
   { name: "Insurers", href: "/dashboard/insurance", icon: Building },
+  { name: "Leads Management", href: "/dashboard/leads", icon: UserPlus },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
